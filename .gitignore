@@ -1,0 +1,13 @@
+# Compiled files
+*.class
+
+# Package files
+*.jar
+*.zip
+
+# OS files
+.DS_Store
+manifest.txt
+
+# Build directories
+release/
