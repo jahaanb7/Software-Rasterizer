@@ -1,4 +1,5 @@
 package src.main;
+
 import java.io.*;
 import java.util.*;
 
@@ -10,14 +11,12 @@ public class OBJLoader {
    * @return ArrayList of Triangle objects
    */
   
-  public static ArrayList<Triangle> loadOBJ(String filename) {
-    System.out.println("Trying to load: " + filename);
-    System.out.println("Current directory: " + System.getProperty("user.dir"));
+  public static ArrayList<Triangle> loadOBJ(InputStream inputStream) {
 
     ArrayList<Vector3D> vertices = new ArrayList<>();
     ArrayList<Triangle> triangles = new ArrayList<>();
 
-    try (BufferedReader b_read = new BufferedReader(new FileReader(filename))){
+    try (BufferedReader b_read = new BufferedReader(new InputStreamReader(inputStream))){
         String line;
 
         while ((line = b_read.readLine()) != null){ //until there is something to read

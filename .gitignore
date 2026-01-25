@@ -1,13 +1,6 @@
-# Compiled files
-*.class
-
-# Package files
+*.dmg
+*.app
 *.jar
-*.zip
-
-# OS files
-.DS_Store
-manifest.txt
-
-# Build directories
-release/
+*.msi
+*.deb
+out/

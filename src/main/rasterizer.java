@@ -26,7 +26,7 @@ public class rasterizer extends  JPanel implements Runnable{
   private double cameraY = 0;
   private double cameraZ = 0;
 
-  private double cam_speed = 5;
+  private double cam_speed = 10;
 
   private boolean move_left = false;
   private boolean move_right = false;
@@ -80,11 +80,11 @@ public class rasterizer extends  JPanel implements Runnable{
 
   public rasterizer(){
 
-    monkey.tris.addAll(OBJLoader.loadOBJ("src/resources/monkey.obj"));
-    homer.tris.addAll(OBJLoader.loadOBJ("src/resources/homer.obj"));
-    rabbit.tris.addAll(OBJLoader.loadOBJ("src/resources/rabbit.obj"));
-    sphere.tris.addAll(OBJLoader.loadOBJ("src/resources/sphere.obj"));
-    maxPlanck.tris.addAll(OBJLoader.loadOBJ("src/resources/MaxPlanck.obj"));
+    monkey.tris.addAll(OBJLoader.loadOBJ(getClass().getResourceAsStream("/resources/monkey.obj")));
+    homer.tris.addAll(OBJLoader.loadOBJ(getClass().getResourceAsStream("/resources/homer.obj")));
+    rabbit.tris.addAll(OBJLoader.loadOBJ(getClass().getResourceAsStream("/resources/rabbit.obj")));
+    sphere.tris.addAll(OBJLoader.loadOBJ(getClass().getResourceAsStream("/resources/sphere.obj")));
+    maxPlanck.tris.addAll(OBJLoader.loadOBJ(getClass().getResourceAsStream("/resources/MaxPlanck.obj")));
 
     setPreferredSize(new Dimension(SCREEN_WIDTH, SCREEN_HEIGHT));
     setBackground(Color.WHITE);
