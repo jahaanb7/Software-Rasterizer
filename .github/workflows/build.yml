@@ -9,15 +9,9 @@ on:
 jobs:
   build:
     strategy:
+      fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
-        include:
-          - os: ubuntu-latest
-            artifact_name: '*.deb'
-          - os: windows-latest
-            artifact_name: '*.msi'
-          - os: macos-latest
-            artifact_name: '*.dmg'
     
     runs-on: ${{ matrix.os }}
     
@@ -31,47 +25,46 @@ jobs:
         java-version: '21'
         distribution: 'temurin'
     
-    - name: Compile Java files
+    - name: Compile and build (Unix)
+      if: runner.os != 'Windows'
+      shell: bash
       run: |
         mkdir -p out
         javac -d out src/main/*.java
-    
-    - name: Copy resources
-      run: |
         cp -r resources out/
-      shell: bash
-    
-    - name: Create JAR
-      run: |
         jar cvfe Graphics_Engine.jar src.main.rasterizer -C out .
-      shell: bash
+    
+    - name: Compile and build (Windows)
+      if: runner.os == 'Windows'
+      shell: cmd
+      run: |
+        mkdir out
+        javac -d out src/main/*.java
+        xcopy /E /I resources out\resources
+        jar cvfe Graphics_Engine.jar src.main.rasterizer -C out .
     
     - name: Build macOS DMG
       if: runner.os == 'macOS'
+      shell: bash
       run: |
-        jpackage --input . --name GraphicsEngine \
-          --main-jar Graphics_Engine.jar \
-          --main-class src.main.rasterizer \
-          --type dmg --app-version 1.0
+        jpackage --input . --name GraphicsEngine --main-jar Graphics_Engine.jar --main-class src.main.rasterizer --type dmg --app-version 1.0
     
     - name: Build Windows MSI
       if: runner.os == 'Windows'
-      run: |
-        jpackage --input . --name GraphicsEngine \
-          --main-jar Graphics_Engine.jar \
-          --main-class src.main.rasterizer \
-          --type msi --app-version 1.0 --win-console
+      shell: cmd
+      run: jpackage --input . --name GraphicsEngine --main-jar Graphics_Engine.jar --main-class src.main.rasterizer --type msi --app-version 1.0 --win-console
     
     - name: Build Linux DEB
       if: runner.os == 'Linux'
+      shell: bash
       run: |
-        jpackage --input . --name GraphicsEngine \
-          --main-jar Graphics_Engine.jar \
-          --main-class src.main.rasterizer \
-          --type deb --app-version 1.0
+        jpackage --input . --name GraphicsEngine --main-jar Graphics_Engine.jar --main-class src.main.rasterizer --type deb --app-version 1.0
     
-    - name: Upload build artifacts
+    - name: Upload artifacts
       uses: actions/upload-artifact@v4
       with:
         name: GraphicsEngine-${{ runner.os }}
-        path: ${{ matrix.artifact_name }}
+        path: |
+          *.dmg
+          *.msi
+          *.deb
