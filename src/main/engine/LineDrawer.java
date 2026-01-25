@@ -1,4 +1,4 @@
-package src.main;
+package src.main.engine;
 
 import java.awt.Color;
 import java.awt.image.BufferedImage;

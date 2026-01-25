@@ -1,4 +1,4 @@
-package src.main;
+package src.main.engine;
 
 class Vector3D{
   public double x;
