@@ -137,12 +137,12 @@ class Matrix{
   }
 
 public static Matrix project(double fov, double aspect, double near, double far) {
-    double f = 1.0/Math.tan(Math.toRadians(fov)/2.0);
+    double f = 1.0/(Math.tan(Math.toRadians(fov)/2.0));
 
     Matrix project = new Matrix(new double[][] {
       {(f/aspect), 0, 0, 0},
-      {0,f,0,0},
-      {0, 0,((far + near)/(far - near)), (-(2*far*near)/(far-near))},
+      {0,-f,0,0},
+      {0, 0,(-(far + near)/(far - near)), (-(2*far*near)/(far-near))},
       {0,0,-1,0}
     });
 

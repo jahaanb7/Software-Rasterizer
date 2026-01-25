@@ -93,16 +93,15 @@ class Vector4D {
     this.x *= n;
     this.y *= n;
     this.z *=  n;
-    this.w *= 1;
 
     return new Vector4D(x,y,z,w);
   }
 
   public Vector4D mul(Matrix m) {
-    double nx = this.x * m.data[0][0] + this.y * m.data[1][0] + this.z * m.data[2][0] + 1.0 * m.data[3][0];
-    double ny = this.x * m.data[0][1] + this.y * m.data[1][1] + this.z * m.data[2][1] + 1.0 * m.data[3][1];
-    double nz = this.x * m.data[0][2] + this.y * m.data[1][2] + this.z * m.data[2][2] + 1.0 * m.data[3][2];
-    double nw = this.x * m.data[0][3] + this.y * m.data[1][3] + this.z * m.data[2][3] + 1.0 * m.data[3][3];
+    double nx = this.x * m.data[0][0] + this.y * m.data[1][0] + this.z * m.data[2][0] + this.w * m.data[3][0];
+    double ny = this.x * m.data[0][1] + this.y * m.data[1][1] + this.z * m.data[2][1] + this.w * m.data[3][1];
+    double nz = this.x * m.data[0][2] + this.y * m.data[1][2] + this.z * m.data[2][2] + this.w * m.data[3][2];
+    double nw = this.x * m.data[0][3] + this.y * m.data[1][3] + this.z * m.data[2][3] + this.w * m.data[3][3];
 
     return new Vector4D(nx, ny, nz, nw);
   }

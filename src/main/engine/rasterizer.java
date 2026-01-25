@@ -31,7 +31,7 @@ public class rasterizer extends  JPanel implements Runnable{
   private double cameraY = 0;
   private double cameraZ = 0;
 
-  private double cam_speed = 20;
+  private double cam_speed = 0.10;
 
   private boolean move_left = false;
   private boolean move_right = false;
@@ -69,7 +69,7 @@ public class rasterizer extends  JPanel implements Runnable{
   Thread gameThread;
 
   //adjusting for models
-  private double zOffset = 400;
+  private double zOffset = 5;
   private double scale = 1.0;
 
   // 3D models
@@ -243,7 +243,7 @@ public class rasterizer extends  JPanel implements Runnable{
     Matrix rotation = Matrix.combined_rotation(rotationX, rotationY, rotationZ);
 
     //Render Model with Triangles:
-    for(Triangle tri : maxPlanck.tris) {
+    for(Triangle tri : monkey.tris) {
 
       Vector4D r1 = tri.v1.mul(rotation);
       Vector4D r2 = tri.v2.mul(rotation);
@@ -270,12 +270,13 @@ public class rasterizer extends  JPanel implements Runnable{
         (r1.z + r2.z + r3.z)/3.0
       );
   
-      Vector3D view = new Vector3D(center.x - cameraX, center.y - cameraY, center.z - cameraZ); //represents the postion of camera
+      //represents the postion of camera
+      Vector3D view = new Vector3D(cameraX - center.x, cameraY - center.y, cameraZ - center.z);
+      double facing_cam = Vector3D.dot(normal, view);
+
+      if(facing_cam > 0){
   
-      if(Vector3D.dot(normal, view) < 0){
-  
-        Vector3D light_dir = new Vector3D(0,0 ,-1.0); // vector that points from camera
-        light_dir.normalize(); // normalize to be unit vectors to dot product with normal vector
+        Vector3D light_dir = new Vector3D(0,0 ,-1.0).normalize(); // vector that points from camera
   
         // calculates the dot product between the each surface normal and light direction from camera
         double shading = Vector3D.dot(normal, light_dir);
@@ -284,6 +285,10 @@ public class rasterizer extends  JPanel implements Runnable{
         r1.x -= cameraX;      r1.y -= cameraY;      r1.z -= cameraZ;
         r2.x -= cameraX;      r2.y -= cameraY;      r2.z -= cameraZ; 
         r3.x -= cameraX;      r3.y -= cameraY;      r3.z -= cameraZ; 
+
+        if (r1.z <= near || r2.z <= near || r3.z <= near) {
+          continue;
+        }
         
         //multiply by projection matrix to project onto screen (3D --> 2D)
         Vector4D p1 = r1.mul(project);
@@ -299,10 +304,13 @@ public class rasterizer extends  JPanel implements Runnable{
         Convert from NDC (Normalized Device Coordinates) to screen space
         0.5 to get it to the center of the screen, and + 1 to get it in infront of camera.
         */
+
         int sx1 = (int)((p1.x + 1) * 0.5 * SCREEN_WIDTH); 
         int sy1 = (int)((1 - (p1.y + 1) * 0.5) * SCREEN_HEIGHT);
+
         int sx2 = (int)((p2.x + 1) * 0.5 * SCREEN_WIDTH);
         int sy2 = (int)((1 - (p2.y + 1) * 0.5) * SCREEN_HEIGHT);
+        
         int sx3 = (int)((p3.x + 1) * 0.5 * SCREEN_WIDTH);
         int sy3 = (int)((1 - (p3.y + 1) * 0.5) * SCREEN_HEIGHT);
   
