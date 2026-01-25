@@ -49,10 +49,10 @@ jobs:
       run: |
         jpackage --input . --name GraphicsEngine --main-jar Graphics_Engine.jar --main-class src.main.rasterizer --type dmg --app-version 1.0
     
-    - name: Build Windows MSI
+    - name: Build Windows EXE
       if: runner.os == 'Windows'
       shell: cmd
-      run: jpackage --input . --name GraphicsEngine --main-jar Graphics_Engine.jar --main-class src.main.rasterizer --type msi --app-version 1.0 --win-console
+      run: jpackage --input . --name GraphicsEngine --main-jar Graphics_Engine.jar --main-class src.main.rasterizer --type exe --app-version 1.0 --win-console
     
     - name: Build Linux DEB
       if: runner.os == 'Linux'
@@ -66,5 +66,5 @@ jobs:
         name: GraphicsEngine-${{ runner.os }}
         path: |
           *.dmg
-          *.msi
+          *.exe
           *.deb
