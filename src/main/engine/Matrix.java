@@ -128,10 +128,10 @@ class Matrix{
     return rotated_x;
   }
 
-  public static Matrix combined_rotation(double angle){
-    Matrix Rz = rotateZ(angle);
-    Matrix Ry = rotateY(angle);
-    Matrix Rx = rotateX(angle);
+  public static Matrix combined_rotation(double rotationX, double rotationY, double rotationZ){
+    Matrix Rz = rotateZ(rotationZ);
+    Matrix Ry = rotateY(rotationY);
+    Matrix Rx = rotateX(rotationX);
 
     return Rz.matrix_mul(Ry).matrix_mul(Rx);
   }
@@ -142,8 +142,8 @@ public static Matrix project(double fov, double aspect, double near, double far)
     Matrix project = new Matrix(new double[][] {
       {(f/aspect), 0, 0, 0},
       {0,f,0,0},
-      {0, 0,((far + near)/(far - near)), 1},
-      {0,0,-((far*near)/(far - near)),0}
+      {0, 0,((far + near)/(far - near)), (-(2*far*near)/(far-near))},
+      {0,0,-1,0}
     });
 
     return project;

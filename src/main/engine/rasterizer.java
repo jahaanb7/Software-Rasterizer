@@ -6,6 +6,11 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseMotionAdapter;
+import java.awt.event.MouseWheelEvent;
+import java.awt.event.MouseWheelListener;
 import java.awt.image.BufferedImage;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -26,14 +31,14 @@ public class rasterizer extends  JPanel implements Runnable{
   private double cameraY = 0;
   private double cameraZ = 0;
 
-  private double cam_speed = 10;
+  private double cam_speed = 20;
 
   private boolean move_left = false;
   private boolean move_right = false;
   private boolean move_up = false;
   private boolean move_down = false;
-  private boolean move_camera_forward = false;
-  private boolean move_camera_backward = false;
+  private boolean move_forward = false;
+  private boolean move_backward = false;
 
   //wireframe for model debugging and testing
   private boolean wireframe_mode = false;
@@ -46,8 +51,17 @@ public class rasterizer extends  JPanel implements Runnable{
 
   Matrix project = Matrix.project(fov, aspect, near, far);
 
+  //Rotation Model
+  private double rotationX = 0;
+  private double rotationY = 0;
+  private double rotationZ = 0;
+
+  private int last_mouse_x = 0;
+  private int last_mouse_y = 0;
+
+  private boolean is_dragging = false;
+    
   //rendering variables
-  private double angle = 0;
   private boolean is_running = false;
   private final double rotation_speed = 1;
   private final int fps = 60;
@@ -55,11 +69,11 @@ public class rasterizer extends  JPanel implements Runnable{
   Thread gameThread;
 
   //adjusting for models
-  private double zOffset = 500;
+  private double zOffset = 400;
   private double scale = 1.0;
 
   // 3D models
-  Mesh monkey = new Mesh(); //blender monkey model
+  Mesh monkey = new Mesh(); //blender monkey  model
   Mesh homer = new Mesh(); // Homer Simpson model
   Mesh rabbit = new Mesh(); // Rabbit model
   Mesh sphere = new Mesh(); // Ico-Sphere model
@@ -109,8 +123,8 @@ public class rasterizer extends  JPanel implements Runnable{
           case KeyEvent.VK_S -> {move_down = true;}
           case KeyEvent.VK_D -> {move_right = true;}
           case KeyEvent.VK_A -> {move_left = true;}
-          case KeyEvent.VK_E -> {move_camera_forward = true;}
-          case KeyEvent.VK_Q -> {move_camera_backward = true;}
+          case KeyEvent.VK_Q -> {move_forward = true;}
+          case KeyEvent.VK_E -> {move_backward = true;}
         }
       }
 
@@ -121,12 +135,63 @@ public class rasterizer extends  JPanel implements Runnable{
           case KeyEvent.VK_S -> {move_down = false;}
           case KeyEvent.VK_D -> {move_right = false;}
           case KeyEvent.VK_A -> {move_left = false;}
-          case KeyEvent.VK_E -> {move_camera_forward = false;}
-          case KeyEvent.VK_Q -> {move_camera_backward = false;}
+          case KeyEvent.VK_Q -> {move_forward = false;}
+          case KeyEvent.VK_E -> {move_backward = false;}
         }
       }
     });
+
+    /*
+    Mouse Inputs for Rotation and Zoom in and out
+    
+    Scroll Up/Down - Zoom in & Zoom out
+    Drag and Move --> rotation
+    */
+
+    addMouseListener(new MouseAdapter(){
+      @Override
+      public void mousePressed(MouseEvent mouse){
+        last_mouse_x = mouse.getX();
+        last_mouse_y = mouse.getY();
+        is_dragging = true;
+      }
+
+      @Override
+      public void mouseReleased(MouseEvent mouse){
+        is_dragging = false;
+      }
+    });
+
+    addMouseMotionListener(new MouseMotionAdapter() {
+      @Override
+      public void mouseDragged(MouseEvent mouse){
+        int delta_mouse_x = mouse.getX() - last_mouse_x;
+        int delta_mouse_y = mouse.getY() - last_mouse_y;
+
+        rotationX += delta_mouse_y * 0.4;
+        rotationY += delta_mouse_x * 0.4;
+
+        last_mouse_x = mouse.getX();
+        last_mouse_y = mouse.getY();
+
+        repaint();
+      }
+    });
+
+    addMouseWheelListener(new MouseWheelListener(){
+      @Override
+      public void mouseWheelMoved(MouseWheelEvent e) {
+        double scroll = e.getPreciseWheelRotation();
+
+        if (scroll > 0) {cameraZ += cam_speed;}
+        if(scroll < 0) {cameraZ -= cam_speed;}
+
+        // prevent model to go behind camera (clipping is not added yet)
+        if(cameraZ > 3) {cameraZ = 3;}
+      }      
+    });
   }
+
 
   private void start() {
     is_running = true;
@@ -140,13 +205,8 @@ public class rasterizer extends  JPanel implements Runnable{
     if(move_up)    {cameraY += cam_speed;}
     if(move_down)  {cameraY -= cam_speed;}
 
-    if(move_camera_forward) {cameraZ += cam_speed;}
-    if(move_camera_backward){cameraZ -= cam_speed;}
-
-    // prevent model to go behind camera (clipping is not added yet)
-    if(cameraZ > 3){
-      cameraZ = 3;
-    }
+    if(move_backward){cameraZ -= cam_speed;}
+    if(move_forward){cameraZ += cam_speed;}
   }
 
   @Override
@@ -156,7 +216,6 @@ public class rasterizer extends  JPanel implements Runnable{
       lastTime = System.nanoTime();
 
       updateCam();
-      angle += rotation_speed;
       repaint();
 
       //Animation and Frame timing
@@ -181,7 +240,7 @@ public class rasterizer extends  JPanel implements Runnable{
 
     BufferedImage screen = new BufferedImage(SCREEN_WIDTH, SCREEN_HEIGHT, BufferedImage.TYPE_INT_RGB);
 
-    Matrix rotation = Matrix.rotateY(angle);
+    Matrix rotation = Matrix.combined_rotation(rotationX, rotationY, rotationZ);
 
     //Render Model with Triangles:
     for(Triangle tri : maxPlanck.tris) {
@@ -199,15 +258,17 @@ public class rasterizer extends  JPanel implements Runnable{
       r2.z += zOffset;
       r3.z += zOffset;
   
-      Vector3D a = new Vector3D((r2.x - r1.x), (r2.y - r1.y), (r2.z - r1.z));
-      Vector3D b = new Vector3D((r3.x - r1.x), (r3.y - r1.y), (r3.z - r1.z));
-      Vector3D normal = (Vector3D.cross(b, a)).normalize();
-  
+      Vector3D a = new Vector3D((r2.x - r1.x), (r2.y - r1.y), (r2.z - r1.z)); // Edge A for this triangle
+      Vector3D b = new Vector3D((r3.x - r1.x), (r3.y - r1.y), (r3.z - r1.z)); // Edge B for this triangle
+
+      //creates a cross product (surface normal) from the two edges that is perpendicular
+      Vector3D normal = (Vector3D.cross(a, b)).normalize(); 
   
       Vector3D center = new Vector3D(
         (r1.x + r2.x + r3.x)/3.0,
         (r1.y + r2.y + r3.y)/3.0,
-        (r1.z + r2.z + r3.z)/3.0);
+        (r1.z + r2.z + r3.z)/3.0
+      );
   
       Vector3D view = new Vector3D(center.x - cameraX, center.y - cameraY, center.z - cameraZ); //represents the postion of camera
   
