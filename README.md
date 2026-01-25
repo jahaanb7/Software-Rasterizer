@@ -14,9 +14,6 @@ A simple 3D software-rasterizer built from scratch in Java. This project impleme
 - **Backface Culling**: Automatic removal of invisible triangles
 - **Perspective Projection**: Proper 3D to 2D transformation
 
-## Screenshots
-<img width="700" height="700" alt="Screenshot 2026-01-24 at 10 21 39 AM" src="https://github.com/user-attachments/assets/08c6c228-cdbf-4c60-8f74-561066714e61" />
-
 ## Getting Started
 
 ### Prerequisites
@@ -100,7 +97,7 @@ Any engine implements a standard 3D graphics pipeline which follows as such:
 - **Perspective Projection Matrix**: FOV-based 3D to 2D transformation with perspective
 - **Rotation Matrices**: Euler angle rotations (rotation for all axes --> X, Y, Z axes)
 
-## 🎨 Loading Your Own Models
+## Loading Your Own Models
 
 1. Export your 3D model as a `.obj` file (supported by Blender, etc.)
 2. Place the `.obj` file in the `resources/` folder
@@ -119,7 +116,7 @@ for(Triangle tri : myModel.tris) {
 }
 ```
 
-## ⚙️ Configuration
+## Configuration
 
 Adjust these constants in `rasterizer.java` to customize the rendering:
 
