@@ -23,6 +23,7 @@ import javax.swing.JPanel;
 public class rasterizer extends  JPanel implements Runnable{
 
   LineDrawer drawer = new LineDrawer();
+  camera cam = new camera();
 
   //screen dimensions
   public static final int SCREEN_HEIGHT = 800;
@@ -35,11 +36,6 @@ public class rasterizer extends  JPanel implements Runnable{
   private boolean move_down = false;
   private boolean move_forward = false;
   private boolean move_backward = false;
-
-  //camera movement
-  public double cameraX = 0; 
-  public double cameraY = 0;
-  public double cameraZ = 0;
 
   //Camera Rotation
   private int last_mouse_x = 0;
@@ -191,11 +187,11 @@ public class rasterizer extends  JPanel implements Runnable{
       public void mouseWheelMoved(MouseWheelEvent e) {
         double scroll = e.getPreciseWheelRotation();
 
-        if (scroll > 0) {cameraZ += cam_speed;}
-        if(scroll < 0) {cameraZ -= cam_speed;}
+        if (scroll > 0) {cam.cam_position.z += cam_speed;}
+        if(scroll < 0) {cam.cam_position.z -= cam_speed;}
 
         // prevent model to go behind camera (clipping is not added yet)
-        if(cameraZ > 3) {cameraZ = 3;}
+        if(cam.cam_position.z > 3) {cam.cam_position.z = 3;}
       }      
     });
   }
@@ -207,18 +203,12 @@ public class rasterizer extends  JPanel implements Runnable{
     gameThread.start();
   }
 
-  public void updateCam(){
-    if(move_left)  {cameraX += cam_speed;}
-    if(move_right) {cameraX -= cam_speed;}
-    if(move_up)    {cameraY += cam_speed;}
-    if(move_down)  {cameraY -= cam_speed;}
-
-    if(move_backward){cameraZ -= cam_speed;}
-    if(move_forward){cameraZ += cam_speed;}
-  }
-
   public void render(Mesh mesh, Matrix matrix, DepthBuffer buffer, BufferedImage screen){
     for(Triangle tri : mesh.tris) {
+
+      double cameraX = cam.cam_position.x;
+      double cameraY = cam.cam_position.y;
+      double cameraZ = cam.cam_position.z;
 
       Vector4D r1 = tri.v1.mul(matrix);
       Vector4D r2 = tri.v2.mul(matrix);
@@ -318,7 +308,8 @@ public class rasterizer extends  JPanel implements Runnable{
     while (is_running) {
       lastTime = System.nanoTime();
 
-      updateCam();
+      cam.update_movement(move_left, move_right, move_up, move_down, move_backward, move_forward);
+
       repaint();
 
       //Animation and Frame timing
