@@ -50,14 +50,14 @@ public class rasterizer extends  JPanel implements Runnable{
   private double rotationY = 0;
   private double rotationZ = 0;
 
-    //model adjustment
-  private double zOffset = 500;
+  //model adjustment
+  private double zOffset = 5;
   private double scale = 1.0;
-  private double cam_speed = 10;
+  private double cam_speed = 0.10;
 
 
   //wireframe for model debugging and testing
-  private boolean wireframe_mode = false;
+  private boolean wireframe_mode = true;
 
   //projection matrix
   private final int fov = 90;
@@ -229,19 +229,19 @@ public class rasterizer extends  JPanel implements Runnable{
       double cameraY = cam.get_y();
       double cameraZ = cam.get_z();
 
-
       Vector4D r1 = tri.v1.mul(rotate);
       Vector4D r2 = tri.v2.mul(rotate);
       Vector4D r3 = tri.v3.mul(rotate);
+
+      Matrix local_matrix = new Matrix(new double[][]{
+        {r1.x, r1.y, r1.z, r1.w},
+        {r2.x, r2.y, r2.z, r2.w},
+        {r3.x, r3.y, r3.z, r3.w}
+      });
     
       //Translation and offset into the screen, to avoid drawing behind the camera
-      r1.scalar_mul(scale);
-      r2.scalar_mul(scale);
-      r3.scalar_mul(scale);
-    
-      r1.z += zOffset;
-      r2.z += zOffset;
-      r3.z += zOffset;
+      local_matrix.scalar_mul(scale);
+      local_matrix.translate(new Vector3D(0, 0, zOffset));
     
       Vector3D a = new Vector3D((r2.x - r1.x), (r2.y - r1.y), (r2.z - r1.z)); // Edge A for this triangle
       Vector3D b = new Vector3D((r3.x - r1.x), (r3.y - r1.y), (r3.z - r1.z)); // Edge B for this triangle
@@ -255,9 +255,9 @@ public class rasterizer extends  JPanel implements Runnable{
         (r1.z + r2.z + r3.z)/3.0
       );
      
-      //represents the postion of camera
-      Vector3D view = new Vector3D(cameraX - center.x, cameraY - center.y, cameraZ - center.z);
-      double facing_cam = Vector3D.dot(normal, view);
+      // center the camera at 0,0 in world coordinates (change of basis)
+      Vector3D camera_view = new Vector3D(cameraX - center.x, cameraY - center.y, cameraZ - center.z);
+      double facing_cam = Vector3D.dot(normal, camera_view);
 
       if(facing_cam > 0){
       
@@ -266,10 +266,10 @@ public class rasterizer extends  JPanel implements Runnable{
         // calculates the dot product between the each surface normal and light direction from camera
         double shading = Vector3D.dot(normal, light_dir) * 0.9;
 
-        //moves the camera in each axis for each vertice of triangle
-        r1.x -= cameraX;      r1.y -= cameraY;      r1.z -= cameraZ;
-        r2.x -= cameraX;      r2.y -= cameraY;      r2.z -= cameraZ; 
-        r3.x -= cameraX;      r3.y -= cameraY;      r3.z -= cameraZ; 
+        Vector3D cam_position = new Vector3D(cameraX, cameraY, cameraZ);
+
+        //tranforms world coordinates into camera coordinates (change of basis)
+        local_matrix.cameraTransform(cam_position);
 
         if (r1.z <= near || r2.z <= near || r3.z <= near) {
           continue;
@@ -357,7 +357,7 @@ public class rasterizer extends  JPanel implements Runnable{
 
     buffer.init();
 
-    render(maxPlanck, rotation, buffer, screen);
+    render(homer, rotation, buffer, screen);
 
     g.drawImage(screen, 0, 0, null);
   }

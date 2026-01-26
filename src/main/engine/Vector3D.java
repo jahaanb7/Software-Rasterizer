@@ -75,7 +75,7 @@ class Vector3D{
   public static Vector3D[] normal_to_screen(Vector4D p1, Vector4D p2, Vector4D p3){
     /* 
     Convert from NDC (Normalized Device Coordinates) to screen space
-    0.5 to get it to the center of the screen, and + 1 to get it in infront of camera.
+    Viewport Transform
     */
     int sx1 = (int)((p1.x + 1) * 0.5 * rasterizer.SCREEN_WIDTH); 
     int sy1 = (int)((1 - (p1.y + 1) * 0.5) * rasterizer.SCREEN_HEIGHT);
