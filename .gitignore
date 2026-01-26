@@ -1,7 +1,11 @@
 .github/
+workflow/
 *.dmg
 *.app
 *.jar
 *.msi
 *.deb
 out/
+bin/
+*.txt
+
