@@ -25,6 +25,9 @@ public class rasterizer extends  JPanel implements Runnable{
   LineDrawer drawer = new LineDrawer();
   camera cam = new camera();
 
+  public double pitch = cam.pitch;
+  public double roll = cam.roll;
+
   //screen dimensions
   public static final int SCREEN_HEIGHT = 800;
   public static final int SCREEN_WIDTH = 800;
@@ -179,6 +182,22 @@ public class rasterizer extends  JPanel implements Runnable{
 
           repaint();
         }
+
+        if(button == MouseEvent.BUTTON1){
+
+          int delta_mouse_x = mouse.getX() - last_mouse_x;
+          int delta_mouse_y = mouse.getY() - last_mouse_y;
+
+          double delta_pitch = delta_mouse_y * 0.4;
+          double delta_roll = delta_mouse_x * 0.4;
+
+          last_mouse_x = mouse.getX();
+          last_mouse_y = mouse.getY();
+
+          cam.rotate_cam(delta_pitch, 0, delta_roll);
+
+          repaint();
+        }
       }
     });
 
@@ -203,16 +222,17 @@ public class rasterizer extends  JPanel implements Runnable{
     gameThread.start();
   }
 
-  public void render(Mesh mesh, Matrix matrix, DepthBuffer buffer, BufferedImage screen){
+  public void render(Mesh mesh, Matrix rotate, DepthBuffer buffer, BufferedImage screen){
     for(Triangle tri : mesh.tris) {
 
-      double cameraX = cam.cam_position.x;
-      double cameraY = cam.cam_position.y;
-      double cameraZ = cam.cam_position.z;
+      double cameraX = cam.get_x();
+      double cameraY = cam.get_y();
+      double cameraZ = cam.get_z();
 
-      Vector4D r1 = tri.v1.mul(matrix);
-      Vector4D r2 = tri.v2.mul(matrix);
-      Vector4D r3 = tri.v3.mul(matrix);
+
+      Vector4D r1 = tri.v1.mul(rotate);
+      Vector4D r2 = tri.v2.mul(rotate);
+      Vector4D r3 = tri.v3.mul(rotate);
     
       //Translation and offset into the screen, to avoid drawing behind the camera
       r1.scalar_mul(scale);
