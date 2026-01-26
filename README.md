@@ -60,22 +60,22 @@ Pre-built executables are available for Windows and macOS:
 ```
 Software-Rasterizer/
 ├── src/main/engine/
-│   ├── rasterizer.java      # Main application and rendering loop
-│   ├── LineDrawer.java       # Line and triangle rasterization algorithms
-│   ├── DepthBuffer.java      # Z-buffer for depth testing
-│   ├── Matrix.java           # Matrix operations and transformations
-│   ├── Vector3D.java         # 3D vector mathematics
-│   ├── Vector4D.java         # 4D homogeneous coordinates
-│   ├── Triangle.java         # Triangle data structure with UV support
-│   ├── Mesh.java             # 3D mesh container
-│   ├── OBJLoader.java        # OBJ file parser with texture coordinate support
-│   └── MyMeshes.java         # Predefined mesh library
+│   ├── rasterizer.java      
+│   ├── LineDrawer.java      
+│   ├── DepthBuffer.java    
+│   ├── Matrix.java        
+│   ├── Vector3D.java    
+│   ├── Vector4D.java        
+│   ├── Triangle.java        
+│   ├── Mesh.java    
+│   ├── OBJLoader.java       
+│   └── MyMeshes.java      
 ├── resources/
-│   ├── monkey.obj            # Blender's Suzanne model
-│   ├── sphere.obj            # Icosphere model
-│   ├── rabbit.obj            # Stanford bunny model
-│   ├── MaxPlanck.obj         # Max Planck bust
-│   └── homer.obj             # Additional model
+│   ├── monkey.obj         
+│   ├── sphere.obj 
+│   ├── rabbit.obj      
+│   ├── MaxPlanck.o
+│   └── homer.obj   
 └── README.md
 ```
 
@@ -83,19 +83,18 @@ Software-Rasterizer/
 
 The engine implements a complete 3D graphics pipeline:
 
-1. **Model Loading**: Parse OBJ files to extract vertices, texture coordinates, and face definitions
-2. **Model Transformation**: Apply rotation matrices for model orientation
+1. **Model Loading**: Parse OBJ files to load models from vertices and faces
+2. **Model Transformation**: Apply rotation matrices for model rotation
 3. **World Space**: Scale and translate model into world coordinates
-4. **Backface Culling**: Calculate surface normals using cross product and cull back-facing triangles
-5. **Lighting Calculation**: Compute diffuse lighting using dot product with light direction
+4. **Backface Culling**: Calculate surface normals using cross product and removes faces that dont face camera
+5. **Lighting Calculation**: Compute lighting using dot product with light direction
 6. **Camera Transform**: Translate vertices relative to camera position
 7. **Clipping**: Cull triangles outside the view frustum (near/far plane)
-8. **Projection**: Transform 3D coordinates to clip space using perspective projection matrix
-9. **Perspective Divide**: Normalize coordinates by dividing by the w component
-10. **Screen Mapping**: Convert normalized device coordinates (NDC) to screen pixels
-11. **Rasterization**: Scan-convert triangles using barycentric coordinates
-12. **Depth Testing**: Z-buffer comparison to determine pixel visibility
-13. **Shading**: Apply interpolated colors or texture samples with lighting
+8. **Projection**: Transform 3D coordinates to show perspective
+9. **Perspective Divide**: Normalize coordinates by dividing by the w' component
+10. **Screen Mapping**: Convert normalized device coordinates (NDC) to screen coordinates
+11. **Rasterization**: Make and fill triangles (render the model)
+12. **Depth Testing**: Z-buffering for solving occulation
 
 ## Key Algorithms & Techniques
 
@@ -159,15 +158,15 @@ public static final int SCREEN_WIDTH = 800;
 public static final int SCREEN_HEIGHT = 800;
 
 // Camera settings
-private final int fov = 90;              // Field of view (degrees)
+private final int fov = 90;              // Field of view (in degrees)
 private final double near = 1;            // Near clipping plane
 private final int far = 550;              // Far clipping plane
 
 // Model settings
-private double zOffset = 5;               // Distance from camera
-private double scale = 1.0;               // Model scale factor
+private double zOffset = 5;               // Distance away from camera, will not need in future updates
+private double scale = 1.0;               // A Scale factor for the model
 
 // Performance
-private final int fps = 60;               // Target framerate
+private final int fps = 60;               // frames per second, higher means more lagging in this application
 private double cam_speed = 0.10;          // Camera movement speed
 ```
