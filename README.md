@@ -1,154 +1,148 @@
-# 3D Graphics Engine
+3D Graphics Engine
+A 3D software rasterizer built from scratch in Java. This project implements the core concepts of computer graphics, including 3D transformations, perspective projection, depth buffering, backface culling, and lighting - all without using any external graphics libraries.
+Features
 
-A simple 3D software-rasterizer built from scratch in Java. This project implements the core concepts of computer graphics, including 3D transformations and rotations, perspective projection, backface culling, and basic lighting - all without using any external graphics libraries.
+Custom 3D Pipeline: Complete graphics pipeline implemented from scratch
+OBJ Model Loading: Parse and render standard .obj 3D model files with texture coordinate support
+Real-time Rendering: Smooth 60 FPS rendering with interactive camera controls
+Depth Buffer (Z-Buffer): Proper occlusion implement (model visibility) 
+Dual Rendering Modes:
 
-## Features
-- **Custom 3D Pipeline**: Complete graphics pipeline implemented from scratch
-- **OBJ Model Loading**: Parse and render standard .obj 3D model files
-- **Real-time Rendering**: Smooth 60 FPS rendering with camera movement
-- **Dual Rendering Modes**:
-  - Wireframe mode for visualization and debugging
-  - Raster Mode for real lighting and filled model
-- **Interactive Camera**: WASD + QE controls for camera movement
-- **Lighting System**: Directional lighting with diffuse shading
-- **Backface Culling**: Automatic removal of invisible triangles
-- **Perspective Projection**: Proper 3D to 2D transformation
+Wireframe mode for visualization and debugging
+Rasterized mode with lighting and shading
 
-## Getting Started
 
-### Prerequisites
+Interactive Camera:
 
-- Java 11 or higher
-- No external libraries required (uses only Java standard library)
+WASD keyboard controls for translation
+Mouse drag for model rotation
+Mouse wheel for zoom
 
-### Installation
 
-1. Clone the repository:
-```bash
-git clone https://github.com/jahaanb7/Graphics-Engine.git
-cd Graphics-Engine
-```
+Lighting System: Directional lighting with diffuse shading and ambient light
+Backface Culling: Automatic removal of back-facing triangles for performance
+Perspective Projection: Proper 3D to 2D transformation with field of view
 
-2. Compile the Java files:
-```bash
-javac src/main/*.java
-```
+Getting Started
+Prerequisites
 
-3. Run the application:
-```bash
-java src.main.rasterizer
-```
+Java 21 or higher
+No external libraries required (uses only Java standard library)
 
-## Camera Movement Controls
+Installation
 
-| Key | Action |
-|-----|--------|
-| **W** | Move camera up |
-| **S** | Move camera down |
-| **A** | Move camera left |
-| **D** | Move camera right |
-| **Q** | Zoom out (move camera backward) |
-| **E** | Zoom in (move camera forward) |
+Clone the repository:
 
-## Project Structure
+bashgit clone https://github.com/jahaanb7/Software-Rasterizer.git
+cd Software-Rasterizer
 
-```
-Graphics-Engine/
-├── src/
-  ├── main/
-  │   ├── rasterizer.java      # Main application and rendering pipeline
-  │   ├── LineDrawer.java       # Line and triangle rasterization
-  │   ├── Matrix.java           # Matrix operations and transformations
-  │   ├── Vector3D.java         # 3D vector mathematics
-  │   ├── Vector4D.java         # 4D homogeneous coordinates
-  │   ├── Triangle.java         # Triangle data structure
-  │   ├── Mesh.java            # 3D mesh container
-  │   ├── OBJLoader.java       # OBJ file parser
-  │   └── MyMeshes.java        # Mesh management
-  ├── resources/
-  │   ├── monkey.obj           # Blender's Suzanne model
-  │   ├── sphere.obj           # Sphere model
-  │   ├── rabbit.obj           # Rabbit model
-  │   ├── MaxPlanck.obj        # Max Planck bust
-  │   └── 100.obj              # Additional model
-  └── README.md
-```
+Compile the Java files:
 
-## Math and Logic behind a Graphics Engine
+bashmkdir bin
+javac -d bin src/main/engine/*.java
+cp -r resources bin/
 
-### Graphics Pipeline
+Run the application:
 
-Any engine implements a standard 3D graphics pipeline which follows as such:
+bashjava -cp bin src.main.engine.rasterizer
+Download Pre-built Releases
+Pre-built executables are available for Windows and macOS:
 
-1. **Model Loading**: Parse OBJ files to extract vertices and face definitions
-2. **Transformation**: Apply rotation matrices to animate the model
-3. **Camera Transform**: Translate vertices based on camera position
-4. **Backface Culling**: Calculate surface normals and cull back-facing triangles
-5. **Lighting**: Compute diffuse lighting using dot product with light direction
-6. **Projection**: Transform 3D coordinates to 2D using perspective projection matrix
-7. **Perspective Divide**: Normalize coordinates by the w component
-8. **Screen Mapping**: Convert normalized device coordinates to screen pixels
-9. **Rasterization**: Draw triangles using either wireframe or filled mode
+Windows: Download the .zip file, extract, and run GraphicsEngine.exe
+macOS: Download the .dmg file, mount it, and drag to Applications
 
-### Key Ideas behind Graphic Engines
+Download Latest Release
 
-- **Bresenham's Line Algorithm**: Efficient pixel-perfect line drawing (better than others due to integer values)
-- **Barycentric Coordinates**: Triangle rasterization and interpolation (for coloring and shading)
-- **Perspective Projection Matrix**: FOV-based 3D to 2D transformation with perspective
-- **Rotation Matrices**: Euler angle rotations (rotation for all axes --> X, Y, Z axes)
+Project Structure
+Software-Rasterizer/
+├── src/main/engine/
+│   ├── rasterizer.java      # Main application and rendering loop
+│   ├── LineDrawer.java       # Line and triangle rasterization algorithms
+│   ├── DepthBuffer.java      # Z-buffer for depth testing
+│   ├── Matrix.java           # Matrix operations and transformations
+│   ├── Vector3D.java         # 3D vector mathematics
+│   ├── Vector4D.java         # 4D homogeneous coordinates
+│   ├── Triangle.java         # Triangle data structure with UV support
+│   ├── Mesh.java             # 3D mesh container
+│   ├── OBJLoader.java        # OBJ file parser with texture coordinate support
+│   └── MyMeshes.java         # Predefined mesh library
+├── resources/
+│   ├── monkey.obj            # Blender's Suzanne model
+│   ├── sphere.obj            # Icosphere model
+│   ├── rabbit.obj            # Stanford bunny model
+│   ├── MaxPlanck.obj         # Max Planck bust
+│   └── homer.obj             # Additional model
+└── README.md
 
-## Loading Your Own Models
+Graphics Pipeline
+The engine implements a complete 3D graphics pipeline:
 
-1. Export your 3D model as a `.obj` file (supported by Blender, etc.)
-2. Place the `.obj` file in the `resources/` folder
-3. In `rasterizer.java`, modify the mesh initialization:
+Model Loading: Parse OBJ files to extract vertices, texture coordinates, and face definitions
+Model Transformation: Apply rotation matrices for model orientation
+World Space: Scale and translate model into world coordinates
+Backface Culling: Calculate surface normals using cross product and cull back-facing triangles
+Lighting Calculation: Compute diffuse lighting using dot product with light direction
+Camera Transform: Translate vertices relative to camera position
+Clipping: Cull triangles outside the view frustum (near/far plane)
+Projection: Transform 3D coordinates to clip space using perspective projection matrix
+Perspective Divide: Normalize coordinates by dividing by the w component
+Screen Mapping: Convert normalized device coordinates (NDC) to screen pixels
+Rasterization: Scan-convert triangles using barycentric coordinates
+Depth Testing: Z-buffer comparison to determine pixel visibility
+Shading: Apply interpolated colors or texture samples with lighting
 
-```java
-Mesh myModel = new Mesh();
-myModel.tris.addAll(OBJLoader.loadOBJ("resources/your_model.obj"));
-```
+Key Algorithms & Techniques
+Depth Buffer (Z-Buffer)
+Bresenham's Line Algorithm
+Barycentric Coordinates
 
-4. Update the rendering loop to use your model:
+Perspective Projection Matrix
+FOV-based transformation from 3D camera space to 2D clip space:
+[f/aspect   0      0              0           ]
+[   0       f      0              0           ]
+[   0       0   -(f+n)/(f-n)   -2fn/(f-n)    ]
+[   0       0      -1             0           ]
+where:
 
-```java
-for(Triangle tri : myModel.tris) {
-    // rendering code...
-}
-```
+f = far plane distance
+n = near plane distance
+aspect = width/height ratio
+f = 1/tan(fov/2)
 
-## Configuration
+Rotation Matrices
+Backface Culling
+Lighting Model
+Simple directional lighting:
 
-Adjust these constants in `rasterizer.java` to customize the rendering:
+Loading Your Own Models
 
-```java
-private static final int SCREEN_WIDTH = 800;      // Window width
-private static final int SCREEN_HEIGHT = 800;     // Window height
-private final int fov = 90;                       // Field of view
-private final int fps = 60;                       // Target framerate
-private double zOffset = 5.0;                     // Model depth offset
-private double scale = 1.0;                       // Model scale
-private final double rotation_speed = 1;          // Rotation speed
-```
+Export your 3D model as a .obj file (from modeling software such as Blender, etc.)
+Place the .obj file in the resources/ folder
+In rasterizer.java, add to the constructor:
 
-## Mathematical Foundations
+javaMesh yourModel = new Mesh();
+yourModel.tris.addAll(OBJLoader.loadOBJ(
+    getClass().getResourceAsStream("/resources/your_model.obj")
+));
 
-The engine implements a major part of Mathematics - Linear Algebra:
+Update the render method in paintComponent():
 
-### Homogeneous Coordinates
-Uses 4D vectors (x, y, z, w) for affine transformations and perspective projection.
+javarender(myModel, rotation, buffer, screen);
+Configuration
+Customize rendering parameters in rasterizer.java:
+java// Screen resolution
+public static final int SCREEN_WIDTH = 800;
+public static final int SCREEN_HEIGHT = 800;
 
-### Projection Matrix
-```
-[f/aspect   0      0           0    ]
-[   0       f      0           0    ]
-[   0       0   (f+n)/(f-n)    1    ]
-[   0       0  -(f*n)/(f-n)    0    ]
-```
-where f = far plane, n = near plane
+// Camera settings
+private final int fov = 90;              // Field of view (degrees)
+private final double near = 1;            // Near clipping plane
+private final int far = 550;              // Far clipping plane
 
-### Rotation Matrices
-- **X-axis rotation**: Roll
-- **Y-axis rotation**: Yaw (currently animated)
-- **Z-axis rotation**: Pitch
+// Model settings
+private double zOffset = 5;               // Distance from camera
+private double scale = 1.0;               // Model scale factor
 
-**Note**: I am the only contributor, Juhi Bhavsar is another account on may laptop, I accidently used that account to push changes. Please be assured that I worked on this by myself
+// Performance
+private final int fps = 60;               // Target framerate
+private double cam_speed = 0.10;          // Camera movement speed
