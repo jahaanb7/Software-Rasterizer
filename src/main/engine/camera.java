@@ -29,24 +29,15 @@ public class camera{
 
   public void update_movement(boolean move_left, boolean move_right, boolean move_up, boolean move_down, boolean move_backward, boolean move_forward){
     
-    // Convert yaw to radians for trig functions
     double yaw_rad = Math.toRadians(yaw);
-    
-    // Calculate forward and right vectors based on yaw
     double forwardX = Math.sin(yaw_rad);
-    double forwardZ = Math.cos(yaw_rad);
     double rightX = Math.cos(yaw_rad);
-    double rightZ = -Math.sin(yaw_rad);
-    
+
     // Move relative to camera orientation
-    if(move_left)     {cam_position.x -= rightX * cam_speed; 
-                       cam_position.z -= rightZ * cam_speed;}
-    if(move_right)    {cam_position.x += rightX * cam_speed; 
-                       cam_position.z += rightZ * cam_speed;}
-    if(move_forward)  {cam_position.x += forwardX * cam_speed; 
-                       cam_position.z += forwardZ * cam_speed;}
-    if(move_backward) {cam_position.x -= forwardX * cam_speed; 
-                       cam_position.z -= forwardZ * cam_speed;}
+    if(move_left)     {cam_position.x -= rightX * cam_speed; }
+    if(move_right)    {cam_position.x += rightX * cam_speed; }
+    if(move_forward)  {cam_position.x += forwardX * cam_speed; }
+    if(move_backward) {cam_position.x -= forwardX * cam_speed; }
     
     // Up/down is still world-space
     if(move_up)       {cam_position.y -= cam_speed;}
