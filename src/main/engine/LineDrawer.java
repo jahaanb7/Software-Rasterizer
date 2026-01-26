@@ -9,6 +9,15 @@ class LineDrawer{
     screen.setRGB(x1,y1,color.getRGB());
   }
 
+  public void put_pixel_z(BufferedImage screen, DepthBuffer buffer,int x, int y, int z, Color color){
+    Vector3D v = new Vector3D(x, y, z);
+    if (x >= 0 && x < screen.getWidth() && y >= 0 && y < screen.getHeight()) {
+      if (buffer.depthTest(v)) {
+        screen.setRGB(x, y, color.getRGB());
+      }
+    }
+  }
+
   public void draw_line_h(BufferedImage screen, int x1, int y1, int x2, int y2) {
     if (x1 > x2) {
         int tx = x1;
@@ -111,7 +120,7 @@ class LineDrawer{
     return (b.x - a.x) * (c.y - a.y) - (b.y - a.y) * (c.x - a.x);
   }
 
-  public void draw_triangle(Vector3D v1, Vector3D v2, Vector3D v3, BufferedImage screen, Color c1, Color c2, Color c3) {
+  public void draw_triangle(Vector3D v1, Vector3D v2, Vector3D v3, DepthBuffer buffer, BufferedImage screen, Color c1, Color c2, Color c3) {
   
   //bounding box
   int minX = (int)Math.floor(Math.min(v1.x, Math.min(v2.x, v3.x)));
@@ -135,10 +144,18 @@ class LineDrawer{
 
         //point inside the triangle
         if (w1 >= 0 && w2 >= 0 && w3 >= 0) {
+          double z = w1 * v1.z + w2 * v2.z + w3 * v3.z;
+
+          Vector3D v = new Vector3D(x, y, z);
+          
+          // Depth test
+          if (buffer.depthTest(v)) {
             Color col = interpolateColor(p, v1, v2, v3, c1, c2, c3);
-            
-          if (x >= 0 && x < screen.getWidth() && y >= 0 && y < screen.getHeight()) { //prevents the entire screen from becoming a 'triangle'
+
+            //prevents any triangle from collapsing into area with 0, or bigger than screen
+            if (x >= 0 && x < screen.getWidth() && y >= 0 && y < screen.getHeight()) { 
               screen.setRGB(x, y, col.getRGB());
+            }
           }
         }
       }

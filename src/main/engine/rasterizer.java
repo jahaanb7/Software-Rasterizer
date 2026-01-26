@@ -52,7 +52,7 @@ public class rasterizer extends  JPanel implements Runnable{
   private double rotationZ = 0;
 
     //model adjustment
-  private double zOffset = 5;
+  private double zOffset = 500;
   private double scale = 1.0;
 
   //wireframe for model debugging and testing
@@ -74,7 +74,7 @@ public class rasterizer extends  JPanel implements Runnable{
   Thread gameThread;
 
   //adjusting for movement and rotation speed
-  private double cam_speed = 0.10;
+  private double cam_speed = 10;
 
   // 3D models
   Mesh monkey = new Mesh(); //blender monkey  model
@@ -82,6 +82,8 @@ public class rasterizer extends  JPanel implements Runnable{
   Mesh rabbit = new Mesh(); // Rabbit model
   Mesh sphere = new Mesh(); // Ico-Sphere model
   Mesh maxPlanck = new Mesh(); // Max Planck Head model
+
+  private DepthBuffer buffer = new DepthBuffer(SCREEN_WIDTH, SCREEN_HEIGHT);
 
   public static void main(String[] args) {
     JFrame frame = new JFrame();
@@ -95,7 +97,6 @@ public class rasterizer extends  JPanel implements Runnable{
   }
 
   public rasterizer(){
-
     monkey.tris.addAll(OBJLoader.loadOBJ(getClass().getResourceAsStream("/resources/monkey.obj")));
     homer.tris.addAll(OBJLoader.loadOBJ(getClass().getResourceAsStream("/resources/homer.obj")));
     rabbit.tris.addAll(OBJLoader.loadOBJ(getClass().getResourceAsStream("/resources/rabbit.obj")));
@@ -211,7 +212,7 @@ public class rasterizer extends  JPanel implements Runnable{
     if(move_forward){cameraZ += cam_speed;}
   }
 
-  public void render(Mesh mesh, Matrix rotation, BufferedImage screen){
+  public void render(Mesh mesh, Matrix rotation, DepthBuffer buffer, BufferedImage screen){
     for(Triangle tri : mesh.tris) {
 
       Vector4D r1 = tri.v1.mul(rotation);
@@ -309,7 +310,7 @@ public class rasterizer extends  JPanel implements Runnable{
           drawer.drawline(screen, sx3, sy3, sx1, sy1);
         }
         else{
-          drawer.draw_triangle(A, B, C, screen, shadedColor, shadedColor, shadedColor);
+          drawer.draw_triangle(A, B, C, buffer, screen, shadedColor, shadedColor, shadedColor);
         }
       }
     }
@@ -347,7 +348,9 @@ public class rasterizer extends  JPanel implements Runnable{
     BufferedImage screen = new BufferedImage(SCREEN_WIDTH, SCREEN_HEIGHT, BufferedImage.TYPE_INT_RGB);
     Matrix rotation = Matrix.combined_rotation(rotationX, rotationY, rotationZ);
 
-    render(sphere, rotation, screen);
+    buffer.init();
+
+    render(maxPlanck, rotation, buffer, screen);
 
     g.drawImage(screen, 0, 0, null);
   }
