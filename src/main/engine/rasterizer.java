@@ -294,11 +294,11 @@ public class rasterizer extends  JPanel implements Runnable{
         }
 
         // NDC to Screen Space
-        Vector3D[] v = Vector3D.normal_to_screen(project);
+        Matrix v = Matrix.normal_to_screen(project);
 
-        Vector3D A = v[0];
-        Vector3D B = v[1];
-        Vector3D C = v[2];
+        Vector3D A = new Vector3D(v.data[0][0], v.data[0][1], v.data[0][2]);
+        Vector3D B = new Vector3D(v.data[1][0], v.data[1][1], v.data[1][2]);
+        Vector3D C = new Vector3D(v.data[2][0], v.data[2][1], v.data[2][2]);
 
         //Color and lighting
         Color baseColor = new Color(171,171,171);

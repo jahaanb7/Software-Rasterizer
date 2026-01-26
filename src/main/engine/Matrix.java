@@ -180,6 +180,26 @@ class Matrix{
     return identity;
   }
 
+  public static Matrix normal_to_screen(Matrix m){
+    // Viewport Transform - convert to screen coordinates 
+
+    int sx1 = (int)((m.data[0][0] + 1) * 0.5 * rasterizer.SCREEN_WIDTH); 
+    int sy1 = (int)((1 - (m.data[0][1] + 1) * 0.5) * rasterizer.SCREEN_HEIGHT);
+
+    int sx2 = (int)((m.data[1][0] + 1) * 0.5 * rasterizer.SCREEN_WIDTH);
+    int sy2 = (int)((1 - (m.data[1][1] + 1) * 0.5) * rasterizer.SCREEN_HEIGHT);
+
+    int sx3 = (int)((m.data[2][0] + 1) * 0.5 * rasterizer.SCREEN_WIDTH);
+    int sy3 = (int)((1 - (m.data[2][1] + 1) * 0.5) * rasterizer.SCREEN_HEIGHT);
+
+    Matrix output = new Matrix(new double[][]{
+      {sx1, sy1, m.data[0][2]}, 
+      {sx2, sy2, m.data[0][2]}, 
+      {sx3, sy3, m.data[0][2]}
+    });
+    return output;
+  }
+
 
   public static void main(String[] args){
       
