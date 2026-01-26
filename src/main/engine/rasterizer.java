@@ -269,28 +269,32 @@ public class rasterizer extends  JPanel implements Runnable{
         Vector3D cam_position = new Vector3D(cameraX, cameraY, cameraZ);
 
         //tranforms world coordinates into camera coordinates (change of basis)
-        local_matrix.cameraTransform(cam_position);
+        Matrix cameraMatrix = local_matrix.cameraTransform(cam_position);
 
-        if (r1.z <= near || r2.z <= near || r3.z <= near) {
+        if (cameraMatrix.data[0][2] <= near || cameraMatrix.data[1][2] <= near || cameraMatrix.data[2][2] <= near) {
           continue;
         }
 
-        if (r1.z >= (far) || r2.z >= (far) || r3.z >= (far)){
+        if (cameraMatrix.data[0][2] >= (far) || cameraMatrix.data[1][2] >= (far) || cameraMatrix.data[2][2] >= (far)){
           continue;
         }
 
         //multiply by projection matrix to project onto screen (3D --> 2D)
-        Vector4D p1 = r1.mul(project);
-        Vector4D p2 = r2.mul(project);
-        Vector4D p3 = r3.mul(project);
-      
+        Matrix projection = cameraMatrix.matrix_mul(project);
+
         //perspective divide
-        if (p1.w != 0) {p1.x /= p1.w; p1.y /= p1.w; p1.z /= p1.w;}
-        if (p2.w != 0) {p2.x /= p2.w; p2.y /= p2.w; p2.z /= p2.w;}
-        if (p3.w != 0) {p3.x /= p3.w; p3.y /= p3.w; p3.z /= p3.w;}
+        for(int i = 0; i < 3; i++){
+          if(projection.data[i][3] != 0){
+
+            projection.data[i][0] /= projection.data[i][3]; 
+            projection.data[i][1] /= projection.data[i][3]; 
+            projection.data[i][2] /= projection.data[i][3];
+
+          }
+        }
 
         // NDC to Screen Space
-        Vector3D[] v = Vector3D.normal_to_screen(p1, p2, p3);
+        Vector3D[] v = Vector3D.normal_to_screen(project);
 
         Vector3D A = v[0];
         Vector3D B = v[1];
