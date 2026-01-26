@@ -31,7 +31,7 @@ public class rasterizer extends  JPanel implements Runnable{
   private double cameraY = 0;
   private double cameraZ = 0;
 
-  private double cam_speed = 0.10;
+  private double cam_speed = 10;
 
   private boolean move_left = false;
   private boolean move_right = false;
@@ -47,7 +47,7 @@ public class rasterizer extends  JPanel implements Runnable{
   private final int fov = 90;
   private final double aspect = SCREEN_WIDTH/(double)SCREEN_HEIGHT;
   private final double near = 1;
-  private final int far = 1000;
+  private final int far = 550;
 
   Matrix project = Matrix.project(fov, aspect, near, far);
 
@@ -69,7 +69,7 @@ public class rasterizer extends  JPanel implements Runnable{
   Thread gameThread;
 
   //adjusting for models
-  private double zOffset = 5;
+  private double zOffset = 500;
   private double scale = 1.0;
 
   // 3D models
@@ -243,7 +243,7 @@ public class rasterizer extends  JPanel implements Runnable{
     Matrix rotation = Matrix.combined_rotation(rotationX, rotationY, rotationZ);
 
     //Render Model with Triangles:
-    for(Triangle tri : monkey.tris) {
+    for(Triangle tri : maxPlanck.tris) {
 
       Vector4D r1 = tri.v1.mul(rotation);
       Vector4D r2 = tri.v2.mul(rotation);
@@ -279,7 +279,7 @@ public class rasterizer extends  JPanel implements Runnable{
         Vector3D light_dir = new Vector3D(0,0 ,-1.0).normalize(); // vector that points from camera
   
         // calculates the dot product between the each surface normal and light direction from camera
-        double shading = Vector3D.dot(normal, light_dir);
+        double shading = Vector3D.dot(normal, light_dir) * 0.9;
 
         //moves the camera in each axis for each vertice of triangle
         r1.x -= cameraX;      r1.y -= cameraY;      r1.z -= cameraZ;
@@ -287,6 +287,10 @@ public class rasterizer extends  JPanel implements Runnable{
         r3.x -= cameraX;      r3.y -= cameraY;      r3.z -= cameraZ; 
 
         if (r1.z <= near || r2.z <= near || r3.z <= near) {
+          continue;
+        }
+
+        if (r1.z >= (far + cameraZ) || r2.z >= (far + cameraZ) || r3.z >= (far + cameraZ)){
           continue;
         }
         
