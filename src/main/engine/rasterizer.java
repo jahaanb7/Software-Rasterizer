@@ -22,23 +22,38 @@ import javax.swing.JPanel;
 
 public class rasterizer extends  JPanel implements Runnable{
 
+  LineDrawer drawer = new LineDrawer();
+
   //screen dimensions
-  private static final int SCREEN_HEIGHT = 800;
-  private static final int SCREEN_WIDTH = 800;
+  public static final int SCREEN_HEIGHT = 800;
+  public static final int SCREEN_WIDTH = 800;
 
-  //camera movement
-  private double cameraX = 0; 
-  private double cameraY = 0;
-  private double cameraZ = 0;
-
-  private double cam_speed = 10;
-
+  //Camera movement
   private boolean move_left = false;
   private boolean move_right = false;
   private boolean move_up = false;
   private boolean move_down = false;
   private boolean move_forward = false;
   private boolean move_backward = false;
+
+  //camera movement
+  public double cameraX = 0; 
+  public double cameraY = 0;
+  public double cameraZ = 0;
+
+  //Camera Rotation
+  private int last_mouse_x = 0;
+  private int last_mouse_y = 0;
+  private boolean is_dragging = false;
+
+  //Rotation Model
+  private double rotationX = 0;
+  private double rotationY = 0;
+  private double rotationZ = 0;
+
+    //model adjustment
+  private double zOffset = 5;
+  private double scale = 1.0;
 
   //wireframe for model debugging and testing
   private boolean wireframe_mode = false;
@@ -50,16 +65,6 @@ public class rasterizer extends  JPanel implements Runnable{
   private final int far = 550;
 
   Matrix project = Matrix.project(fov, aspect, near, far);
-
-  //Rotation Model
-  private double rotationX = 0;
-  private double rotationY = 0;
-  private double rotationZ = 0;
-
-  private int last_mouse_x = 0;
-  private int last_mouse_y = 0;
-
-  private boolean is_dragging = false;
     
   //rendering variables
   private boolean is_running = false;
@@ -68,9 +73,8 @@ public class rasterizer extends  JPanel implements Runnable{
   private final long frame_time = 1_000_000_000L/fps;
   Thread gameThread;
 
-  //adjusting for models
-  private double zOffset = 500;
-  private double scale = 1.0;
+  //adjusting for movement and rotation speed
+  private double cam_speed = 0.10;
 
   // 3D models
   Mesh monkey = new Mesh(); //blender monkey  model
@@ -78,8 +82,6 @@ public class rasterizer extends  JPanel implements Runnable{
   Mesh rabbit = new Mesh(); // Rabbit model
   Mesh sphere = new Mesh(); // Ico-Sphere model
   Mesh maxPlanck = new Mesh(); // Max Planck Head model
-
-  LineDrawer drawer = new LineDrawer();
 
   public static void main(String[] args) {
     JFrame frame = new JFrame();
@@ -209,6 +211,110 @@ public class rasterizer extends  JPanel implements Runnable{
     if(move_forward){cameraZ += cam_speed;}
   }
 
+  public void render(Mesh mesh, Matrix rotation, BufferedImage screen){
+    for(Triangle tri : mesh.tris) {
+
+      Vector4D r1 = tri.v1.mul(rotation);
+      Vector4D r2 = tri.v2.mul(rotation);
+      Vector4D r3 = tri.v3.mul(rotation);
+    
+      //Translation and offset into the screen, to avoid drawing behind the camera
+      r1.scalar_mul(scale);
+      r2.scalar_mul(scale);
+      r3.scalar_mul(scale);
+    
+      r1.z += zOffset;
+      r2.z += zOffset;
+      r3.z += zOffset;
+    
+      Vector3D a = new Vector3D((r2.x - r1.x), (r2.y - r1.y), (r2.z - r1.z)); // Edge A for this triangle
+      Vector3D b = new Vector3D((r3.x - r1.x), (r3.y - r1.y), (r3.z - r1.z)); // Edge B for this triangle
+
+      //creates a cross product (surface normal) from the two edges that is perpendicular
+      Vector3D normal = (Vector3D.cross(a, b)).normalize(); 
+    
+      Vector3D center = new Vector3D(
+        (r1.x + r2.x + r3.x)/3.0,
+        (r1.y + r2.y + r3.y)/3.0,
+        (r1.z + r2.z + r3.z)/3.0
+      );
+     
+      //represents the postion of camera
+      Vector3D view = new Vector3D(cameraX - center.x, cameraY - center.y, cameraZ - center.z);
+      double facing_cam = Vector3D.dot(normal, view);
+
+      if(facing_cam > 0){
+      
+        Vector3D light_dir = new Vector3D(0,0 ,-1.0).normalize(); // vector that points from camera
+      
+        // calculates the dot product between the each surface normal and light direction from camera
+        double shading = Vector3D.dot(normal, light_dir) * 0.9;
+
+        //moves the camera in each axis for each vertice of triangle
+        r1.x -= cameraX;      r1.y -= cameraY;      r1.z -= cameraZ;
+        r2.x -= cameraX;      r2.y -= cameraY;      r2.z -= cameraZ; 
+        r3.x -= cameraX;      r3.y -= cameraY;      r3.z -= cameraZ; 
+
+        if (r1.z <= near || r2.z <= near || r3.z <= near) {
+          continue;
+        }
+
+        if (r1.z >= (far) || r2.z >= (far) || r3.z >= (far)){
+          continue;
+        }
+
+        //multiply by projection matrix to project onto screen (3D --> 2D)
+        Vector4D p1 = r1.mul(project);
+        Vector4D p2 = r2.mul(project);
+        Vector4D p3 = r3.mul(project);
+      
+        //perspective divide
+        if (p1.w != 0) {p1.x /= p1.w; p1.y /= p1.w; p1.z /= p1.w;}
+        if (p2.w != 0) {p2.x /= p2.w; p2.y /= p2.w; p2.z /= p2.w;}
+        if (p3.w != 0) {p3.x /= p3.w; p3.y /= p3.w; p3.z /= p3.w;}
+      
+        /* 
+        Convert from NDC (Normalized Device Coordinates) to screen space
+        0.5 to get it to the center of the screen, and + 1 to get it in infront of camera.
+        */
+
+        int sx1 = (int)((p1.x + 1) * 0.5 * SCREEN_WIDTH); 
+        int sy1 = (int)((1 - (p1.y + 1) * 0.5) * SCREEN_HEIGHT);
+
+        int sx2 = (int)((p2.x + 1) * 0.5 * SCREEN_WIDTH);
+        int sy2 = (int)((1 - (p2.y + 1) * 0.5) * SCREEN_HEIGHT);
+
+        int sx3 = (int)((p3.x + 1) * 0.5 * SCREEN_WIDTH);
+        int sy3 = (int)((1 - (p3.y + 1) * 0.5) * SCREEN_HEIGHT);
+      
+        Vector3D A = new Vector3D(sx1, sy1, p1.z); 
+        Vector3D B = new Vector3D(sx2, sy2, p2.z); 
+        Vector3D C = new Vector3D(sx3, sy3, p3.z); 
+      
+        Color baseColor = new Color(171,171,171);
+      
+        int r_color = (int)(baseColor.getRed() * shading);
+        int g_color = (int)(baseColor.getGreen() * shading);
+        int b_color = (int)(baseColor.getBlue() * shading);
+      
+        r_color = Math.min(255, Math.max(0, r_color));
+        g_color = Math.min(255, Math.max(0, g_color));
+        b_color = Math.min(255, Math.max(0, b_color));
+      
+        Color shadedColor = new Color(r_color, g_color, b_color);
+      
+        if(wireframe_mode){
+          drawer.drawline(screen, sx1, sy1, sx2, sy2);
+          drawer.drawline(screen, sx2, sy2, sx3, sy3);     // This is for wireframe and for debugging
+          drawer.drawline(screen, sx3, sy3, sx1, sy1);
+        }
+        else{
+          drawer.draw_triangle(A, B, C, screen, shadedColor, shadedColor, shadedColor);
+        }
+      }
+    }
+  }
+
   @Override
     public void run() {
     long lastTime;
@@ -239,111 +345,10 @@ public class rasterizer extends  JPanel implements Runnable{
     g2.setColor(Color.WHITE);
 
     BufferedImage screen = new BufferedImage(SCREEN_WIDTH, SCREEN_HEIGHT, BufferedImage.TYPE_INT_RGB);
-
     Matrix rotation = Matrix.combined_rotation(rotationX, rotationY, rotationZ);
 
-    //Render Model with Triangles:
-    for(Triangle tri : maxPlanck.tris) {
+    render(sphere, rotation, screen);
 
-      Vector4D r1 = tri.v1.mul(rotation);
-      Vector4D r2 = tri.v2.mul(rotation);
-      Vector4D r3 = tri.v3.mul(rotation);
-  
-      //Translation and offset into the screen, to avoid drawing behind the camera
-      r1.scalar_mul(scale);
-      r2.scalar_mul(scale);
-      r3.scalar_mul(scale);
-  
-      r1.z += zOffset;
-      r2.z += zOffset;
-      r3.z += zOffset;
-  
-      Vector3D a = new Vector3D((r2.x - r1.x), (r2.y - r1.y), (r2.z - r1.z)); // Edge A for this triangle
-      Vector3D b = new Vector3D((r3.x - r1.x), (r3.y - r1.y), (r3.z - r1.z)); // Edge B for this triangle
-
-      //creates a cross product (surface normal) from the two edges that is perpendicular
-      Vector3D normal = (Vector3D.cross(a, b)).normalize(); 
-  
-      Vector3D center = new Vector3D(
-        (r1.x + r2.x + r3.x)/3.0,
-        (r1.y + r2.y + r3.y)/3.0,
-        (r1.z + r2.z + r3.z)/3.0
-      );
-  
-      //represents the postion of camera
-      Vector3D view = new Vector3D(cameraX - center.x, cameraY - center.y, cameraZ - center.z);
-      double facing_cam = Vector3D.dot(normal, view);
-
-      if(facing_cam > 0){
-  
-        Vector3D light_dir = new Vector3D(0,0 ,-1.0).normalize(); // vector that points from camera
-  
-        // calculates the dot product between the each surface normal and light direction from camera
-        double shading = Vector3D.dot(normal, light_dir) * 0.9;
-
-        //moves the camera in each axis for each vertice of triangle
-        r1.x -= cameraX;      r1.y -= cameraY;      r1.z -= cameraZ;
-        r2.x -= cameraX;      r2.y -= cameraY;      r2.z -= cameraZ; 
-        r3.x -= cameraX;      r3.y -= cameraY;      r3.z -= cameraZ; 
-
-        if (r1.z <= near || r2.z <= near || r3.z <= near) {
-          continue;
-        }
-
-        if (r1.z >= (far + cameraZ) || r2.z >= (far + cameraZ) || r3.z >= (far + cameraZ)){
-          continue;
-        }
-        
-        //multiply by projection matrix to project onto screen (3D --> 2D)
-        Vector4D p1 = r1.mul(project);
-        Vector4D p2 = r2.mul(project);
-        Vector4D p3 = r3.mul(project);
-  
-        //perspective divide
-        if (p1.w != 0) {p1.x /= p1.w; p1.y /= p1.w; p1.z /= p1.w;}
-        if (p2.w != 0) {p2.x /= p2.w; p2.y /= p2.w; p2.z /= p2.w;}
-        if (p3.w != 0) {p3.x /= p3.w; p3.y /= p3.w; p3.z /= p3.w;}
-  
-        /* 
-        Convert from NDC (Normalized Device Coordinates) to screen space
-        0.5 to get it to the center of the screen, and + 1 to get it in infront of camera.
-        */
-
-        int sx1 = (int)((p1.x + 1) * 0.5 * SCREEN_WIDTH); 
-        int sy1 = (int)((1 - (p1.y + 1) * 0.5) * SCREEN_HEIGHT);
-
-        int sx2 = (int)((p2.x + 1) * 0.5 * SCREEN_WIDTH);
-        int sy2 = (int)((1 - (p2.y + 1) * 0.5) * SCREEN_HEIGHT);
-        
-        int sx3 = (int)((p3.x + 1) * 0.5 * SCREEN_WIDTH);
-        int sy3 = (int)((1 - (p3.y + 1) * 0.5) * SCREEN_HEIGHT);
-  
-        Vector3D A = new Vector3D(sx1, sy1, p1.z); 
-        Vector3D B = new Vector3D(sx2, sy2, p2.z); 
-        Vector3D C = new Vector3D(sx3, sy3, p3.z); 
-  
-        Color baseColor = new Color(171,171,171);
-  
-        int r_color = (int)(baseColor.getRed() * shading);
-        int g_color = (int)(baseColor.getGreen() * shading);
-        int b_color = (int)(baseColor.getBlue() * shading);
-  
-        r_color = Math.min(255, Math.max(0, r_color));
-        g_color = Math.min(255, Math.max(0, g_color));
-        b_color = Math.min(255, Math.max(0, b_color));
-  
-        Color shadedColor = new Color(r_color, g_color, b_color);
-  
-        if(wireframe_mode){
-          drawer.drawline(screen, sx1, sy1, sx2, sy2);
-          drawer.drawline(screen, sx2, sy2, sx3, sy3);     // This is for wireframe and for debugging
-          drawer.drawline(screen, sx3, sy3, sx1, sy1);
-        }
-        else{
-          drawer.draw_triangle(A, B, C, screen, shadedColor, shadedColor, shadedColor);
-        }
-      }
-    }
     g.drawImage(screen, 0, 0, null);
   }
 }

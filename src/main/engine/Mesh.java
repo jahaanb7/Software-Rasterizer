@@ -8,9 +8,4 @@ public class Mesh {
     public Mesh() {
       
     }
-
-    public Mesh normalizeMesh(Mesh mesh){
-        
-        return null;
-    }
 }
