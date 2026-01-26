@@ -1,4 +1,4 @@
-name: Build Windows EXE
+name: Build Multi-Platform
 
 on:
   push:
@@ -20,7 +20,7 @@ jobs:
         java-version: '21'
         distribution: 'temurin'
     
-    - name: Compile and build
+    - name: Compile and build JAR
       shell: cmd
       run: |
         mkdir out
@@ -49,3 +49,45 @@ jobs:
       with:
         name: GraphicsEngine-Windows
         path: GraphicsEngine-Windows.zip
+
+  build-macos:
+    runs-on: macos-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Set up JDK 21
+      uses: actions/setup-java@v4
+      with:
+        java-version: '21'
+        distribution: 'temurin'
+    
+    - name: Compile and build JAR
+      run: |
+        mkdir -p out
+        javac -d out src/main/engine/*.java
+        cp -r resources out/
+        jar cvfe Graphics_Engine.jar src.main.engine.rasterizer -C out .
+    
+    - name: Prepare jpackage input directory
+      run: |
+        mkdir -p jpackage-input
+        cp Graphics_Engine.jar jpackage-input/
+    
+    - name: Create macOS DMG with bundled JRE
+      run: |
+        jpackage \
+          --input jpackage-input \
+          --name "GraphicsEngine" \
+          --main-jar Graphics_Engine.jar \
+          --main-class src.main.engine.rasterizer \
+          --type dmg \
+          --app-version 1.0 \
+          --vendor "YourName"
+    
+    - name: Upload macOS Build
+      uses: actions/upload-artifact@v4
+      with:
+        name: GraphicsEngine-macOS
+        path: "*.dmg"
