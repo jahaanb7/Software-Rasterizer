@@ -5,7 +5,6 @@ workflow/
 *.jar
 *.msi
 *.deb
+*.txt
 out/
 bin/
-*.txt
-
