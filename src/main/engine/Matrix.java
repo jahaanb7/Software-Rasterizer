@@ -136,7 +136,7 @@ class Matrix{
     return Rz.matrix_mul(Ry).matrix_mul(Rx);
   }
 
-public static Matrix project(double fov, double aspect, double near, double far) {
+  public static Matrix project(double fov, double aspect, double near, double far) {
     double f = 1.0/(Math.tan(Math.toRadians(fov)/2.0));
 
     Matrix project = new Matrix(new double[][] {
@@ -148,6 +148,16 @@ public static Matrix project(double fov, double aspect, double near, double far)
 
     return project;
   }
+
+  public static Matrix identity(){
+    Matrix identity = new Matrix(new double[][]{
+      {1,0,0},
+      {0,1,0},
+      {0,0,1}
+    });
+    return identity;
+  }
+
 
   public static void main(String[] args){
       

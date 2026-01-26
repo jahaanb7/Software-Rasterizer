@@ -72,50 +72,29 @@ class Vector3D{
     return result;
   }
 
+  public static Vector3D[] normal_to_screen(Vector4D p1, Vector4D p2, Vector4D p3){
+    /* 
+    Convert from NDC (Normalized Device Coordinates) to screen space
+    0.5 to get it to the center of the screen, and + 1 to get it in infront of camera.
+    */
+    int sx1 = (int)((p1.x + 1) * 0.5 * rasterizer.SCREEN_WIDTH); 
+    int sy1 = (int)((1 - (p1.y + 1) * 0.5) * rasterizer.SCREEN_HEIGHT);
+
+    int sx2 = (int)((p2.x + 1) * 0.5 * rasterizer.SCREEN_WIDTH);
+    int sy2 = (int)((1 - (p2.y + 1) * 0.5) * rasterizer.SCREEN_HEIGHT);
+
+    int sx3 = (int)((p3.x + 1) * 0.5 * rasterizer.SCREEN_WIDTH);
+    int sy3 = (int)((1 - (p3.y + 1) * 0.5) * rasterizer.SCREEN_HEIGHT);
+
+    Vector3D[] output = {
+      new Vector3D(sx1, sy1, p1.z), 
+      new Vector3D(sx2, sy2, p2.z), 
+      new Vector3D(sx3, sy3, p3.z), 
+    };
+    return output;
+  }
+
   public Vector4D toVector4D(){
     return new Vector4D(x, y, z, 1);
-  }
-}
-
-
-
-class Vector4D {
-  public double x, y, z, w;
-
-  public Vector4D(double x, double y, double z, double w) {
-      this.x = x;
-      this.y = y;
-      this.z = z;
-      this.w = w;
-    }
-
-  public Vector4D scalar_mul(double n){
-    this.x *= n;
-    this.y *= n;
-    this.z *=  n;
-
-    return new Vector4D(x,y,z,w);
-  }
-
-  public Vector4D mul(Matrix m) {
-    double nx = this.x * m.data[0][0] + this.y * m.data[1][0] + this.z * m.data[2][0] + this.w * m.data[3][0];
-    double ny = this.x * m.data[0][1] + this.y * m.data[1][1] + this.z * m.data[2][1] + this.w * m.data[3][1];
-    double nz = this.x * m.data[0][2] + this.y * m.data[1][2] + this.z * m.data[2][2] + this.w * m.data[3][2];
-    double nw = this.x * m.data[0][3] + this.y * m.data[1][3] + this.z * m.data[2][3] + this.w * m.data[3][3];
-
-    return new Vector4D(nx, ny, nz, nw);
-  }
-
-  public Vector4D apply(Vector3D v, double zOffset, double scale, Vector3D center) {
-    return new Vector4D(
-        (v.x - center.x) * scale,
-        (v.y - center.y) * scale,
-        (v.z - center.z) * scale + zOffset,
-        1
-    );
-  }
-
-  public Vector3D toVector3D(){
-    return new Vector3D(x, y, z);
   }
 }

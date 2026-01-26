@@ -54,6 +54,8 @@ public class rasterizer extends  JPanel implements Runnable{
     //model adjustment
   private double zOffset = 500;
   private double scale = 1.0;
+  private double cam_speed = 10;
+
 
   //wireframe for model debugging and testing
   private boolean wireframe_mode = false;
@@ -62,7 +64,7 @@ public class rasterizer extends  JPanel implements Runnable{
   private final int fov = 90;
   private final double aspect = SCREEN_WIDTH/(double)SCREEN_HEIGHT;
   private final double near = 1;
-  private final int far = 550;
+  private final int far = 1000;
 
   Matrix project = Matrix.project(fov, aspect, near, far);
     
@@ -72,9 +74,6 @@ public class rasterizer extends  JPanel implements Runnable{
   private final int fps = 60;
   private final long frame_time = 1_000_000_000L/fps;
   Thread gameThread;
-
-  //adjusting for movement and rotation speed
-  private double cam_speed = 10;
 
   // 3D models
   Mesh monkey = new Mesh(); //blender monkey  model
@@ -154,8 +153,10 @@ public class rasterizer extends  JPanel implements Runnable{
     addMouseListener(new MouseAdapter(){
       @Override
       public void mousePressed(MouseEvent mouse){
+
         last_mouse_x = mouse.getX();
         last_mouse_y = mouse.getY();
+        
         is_dragging = true;
       }
 
@@ -168,16 +169,20 @@ public class rasterizer extends  JPanel implements Runnable{
     addMouseMotionListener(new MouseMotionAdapter() {
       @Override
       public void mouseDragged(MouseEvent mouse){
-        int delta_mouse_x = mouse.getX() - last_mouse_x;
-        int delta_mouse_y = mouse.getY() - last_mouse_y;
+        int button = mouse.getButton();
 
-        rotationX += delta_mouse_y * 0.4;
-        rotationY += delta_mouse_x * 0.4;
+        if(button == MouseEvent.BUTTON3){
+          int delta_mouse_x = mouse.getX() - last_mouse_x;
+          int delta_mouse_y = mouse.getY() - last_mouse_y;
 
-        last_mouse_x = mouse.getX();
-        last_mouse_y = mouse.getY();
+          rotationX += delta_mouse_y * 0.4;
+          rotationY += delta_mouse_x * 0.4;
 
-        repaint();
+          last_mouse_x = mouse.getX();
+          last_mouse_y = mouse.getY();
+
+          repaint();
+        }
       }
     });
 
@@ -203,8 +208,8 @@ public class rasterizer extends  JPanel implements Runnable{
   }
 
   public void updateCam(){
-    if(move_left)  {cameraX -= cam_speed;}
-    if(move_right) {cameraX += cam_speed;}
+    if(move_left)  {cameraX += cam_speed;}
+    if(move_right) {cameraX -= cam_speed;}
     if(move_up)    {cameraY += cam_speed;}
     if(move_down)  {cameraY -= cam_speed;}
 
@@ -212,12 +217,12 @@ public class rasterizer extends  JPanel implements Runnable{
     if(move_forward){cameraZ += cam_speed;}
   }
 
-  public void render(Mesh mesh, Matrix rotation, DepthBuffer buffer, BufferedImage screen){
+  public void render(Mesh mesh, Matrix matrix, DepthBuffer buffer, BufferedImage screen){
     for(Triangle tri : mesh.tris) {
 
-      Vector4D r1 = tri.v1.mul(rotation);
-      Vector4D r2 = tri.v2.mul(rotation);
-      Vector4D r3 = tri.v3.mul(rotation);
+      Vector4D r1 = tri.v1.mul(matrix);
+      Vector4D r2 = tri.v2.mul(matrix);
+      Vector4D r3 = tri.v3.mul(matrix);
     
       //Translation and offset into the screen, to avoid drawing behind the camera
       r1.scalar_mul(scale);
@@ -273,25 +278,15 @@ public class rasterizer extends  JPanel implements Runnable{
         if (p1.w != 0) {p1.x /= p1.w; p1.y /= p1.w; p1.z /= p1.w;}
         if (p2.w != 0) {p2.x /= p2.w; p2.y /= p2.w; p2.z /= p2.w;}
         if (p3.w != 0) {p3.x /= p3.w; p3.y /= p3.w; p3.z /= p3.w;}
-      
-        /* 
-        Convert from NDC (Normalized Device Coordinates) to screen space
-        0.5 to get it to the center of the screen, and + 1 to get it in infront of camera.
-        */
 
-        int sx1 = (int)((p1.x + 1) * 0.5 * SCREEN_WIDTH); 
-        int sy1 = (int)((1 - (p1.y + 1) * 0.5) * SCREEN_HEIGHT);
+        // NDC to Screen Space
+        Vector3D[] v = Vector3D.normal_to_screen(p1, p2, p3);
 
-        int sx2 = (int)((p2.x + 1) * 0.5 * SCREEN_WIDTH);
-        int sy2 = (int)((1 - (p2.y + 1) * 0.5) * SCREEN_HEIGHT);
+        Vector3D A = v[0];
+        Vector3D B = v[1];
+        Vector3D C = v[2];
 
-        int sx3 = (int)((p3.x + 1) * 0.5 * SCREEN_WIDTH);
-        int sy3 = (int)((1 - (p3.y + 1) * 0.5) * SCREEN_HEIGHT);
-      
-        Vector3D A = new Vector3D(sx1, sy1, p1.z); 
-        Vector3D B = new Vector3D(sx2, sy2, p2.z); 
-        Vector3D C = new Vector3D(sx3, sy3, p3.z); 
-      
+        //Color and lighting
         Color baseColor = new Color(171,171,171);
       
         int r_color = (int)(baseColor.getRed() * shading);
@@ -304,10 +299,11 @@ public class rasterizer extends  JPanel implements Runnable{
       
         Color shadedColor = new Color(r_color, g_color, b_color);
       
+        //Wireframe or Solid Mode
         if(wireframe_mode){
-          drawer.drawline(screen, sx1, sy1, sx2, sy2);
-          drawer.drawline(screen, sx2, sy2, sx3, sy3);     // This is for wireframe and for debugging
-          drawer.drawline(screen, sx3, sy3, sx1, sy1);
+          drawer.drawline(screen, (int)A.x, (int)A.y, (int)B.x, (int)B.y);
+          drawer.drawline(screen, (int)B.x, (int)B.y, (int)C.x, (int)C.y);     // This is for wireframe and for debugging
+          drawer.drawline(screen, (int)C.x, (int)C.y, (int)A.x, (int)A.y);
         }
         else{
           drawer.draw_triangle(A, B, C, buffer, screen, shadedColor, shadedColor, shadedColor);
