@@ -64,28 +64,6 @@ class Matrix{
     return result;
   }
 
-  public Matrix translate(Vector3D pos){
-    Matrix translation = new Matrix(new double[][]{
-      {1, 0, 0, pos.x},
-      {0, 1, 0, pos.y},
-      {0, 0, 1, pos.z},
-      {0, 0, 0, 1}
-    });
-    Matrix translated = this.matrix_mul(translation);
-    return translated;
-  }
-
-  public Matrix cameraTransform(Vector3D cam_position){
-    Matrix cam_matrix = new Matrix(new double[][]{
-      {1, 0, 0, -cam_position.x},
-      {0, 1, 0, -cam_position.y},
-      {0, 0, 1, -cam_position.z},
-      {0, 0, 0, 1}
-    });
-
-    return this.matrix_mul(cam_matrix);
-  }
-
   public Matrix transpose(){    
     double[][] transposed = new double[columns][rows];
     for(int i = 0; i < rows; i++){
@@ -178,26 +156,6 @@ class Matrix{
       {0,0,1}
     });
     return identity;
-  }
-
-  public static Matrix normal_to_screen(Matrix m){
-    // Viewport Transform - convert to screen coordinates 
-
-    int sx1 = (int)((m.data[0][0] + 1) * 0.5 * rasterizer.SCREEN_WIDTH); 
-    int sy1 = (int)((1 - (m.data[0][1] + 1) * 0.5) * rasterizer.SCREEN_HEIGHT);
-
-    int sx2 = (int)((m.data[1][0] + 1) * 0.5 * rasterizer.SCREEN_WIDTH);
-    int sy2 = (int)((1 - (m.data[1][1] + 1) * 0.5) * rasterizer.SCREEN_HEIGHT);
-
-    int sx3 = (int)((m.data[2][0] + 1) * 0.5 * rasterizer.SCREEN_WIDTH);
-    int sy3 = (int)((1 - (m.data[2][1] + 1) * 0.5) * rasterizer.SCREEN_HEIGHT);
-
-    Matrix output = new Matrix(new double[][]{
-      {sx1, sy1, m.data[0][2]}, 
-      {sx2, sy2, m.data[0][2]}, 
-      {sx3, sy3, m.data[0][2]}
-    });
-    return output;
   }
 
 

@@ -28,20 +28,13 @@ public class camera{
   }
 
   public void update_movement(boolean move_left, boolean move_right, boolean move_up, boolean move_down, boolean move_backward, boolean move_forward){
-    
-    double yaw_rad = Math.toRadians(yaw);
-    double forwardX = Math.sin(yaw_rad);
-    double rightX = Math.cos(yaw_rad);
+    if(move_left)  {cam_position.x += cam_speed;}
+    if(move_right) {cam_position.x -= cam_speed;}
+    if(move_up)    {cam_position.y += cam_speed;}
+    if(move_down)  {cam_position.y -= cam_speed;}
 
-    // Move relative to camera orientation
-    if(move_left)     {cam_position.x -= rightX * cam_speed; }
-    if(move_right)    {cam_position.x += rightX * cam_speed; }
-    if(move_forward)  {cam_position.x += forwardX * cam_speed; }
-    if(move_backward) {cam_position.x -= forwardX * cam_speed; }
-    
-    // Up/down is still world-space
-    if(move_up)       {cam_position.y -= cam_speed;}
-    if(move_down)     {cam_position.y += cam_speed;}
+    if(move_backward){cam_position.z -= cam_speed;}
+    if(move_forward){cam_position.z += cam_speed;}
   }
 
   public double get_x(){ 
