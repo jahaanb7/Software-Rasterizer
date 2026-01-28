@@ -17,17 +17,6 @@ public class camera{
     this.cam_speed = camera_speed;
     this.orient = new Quaternion(1,0,0,0);
   }
-
-  public void update_movement(boolean move_left, boolean move_right, boolean move_up, boolean move_down, boolean move_backward, boolean move_forward){
-    if(move_left)  {cam_position.x += cam_speed;}
-    if(move_right) {cam_position.x -= cam_speed;}
-    if(move_up)    {cam_position.y += cam_speed;}
-    if(move_down)  {cam_position.y -= cam_speed;}
-
-    if(move_backward){cam_position.z -= cam_speed;}
-    if(move_forward){cam_position.z += cam_speed;}
-  }
-
   public double get_x(){ 
     return cam_position.x; 
   }

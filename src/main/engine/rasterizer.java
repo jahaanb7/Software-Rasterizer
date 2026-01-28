@@ -216,6 +216,17 @@ public class rasterizer extends  JPanel implements Runnable{
     });
   }
 
+  public void update_movement(){
+
+    if(move_left)  {cam.cam_position.x += cam_speed;}
+    if(move_right) {cam.cam_position.x -= cam_speed;}
+    if(move_up)    {cam.cam_position.y += cam_speed;}
+    if(move_down)  {cam.cam_position.y -= cam_speed;}
+
+    if(move_backward){cam.cam_position.z -= cam_speed;}
+    if(move_forward){cam.cam_position.z += cam_speed;}
+  }
+
 
   private void start() {
     is_running = true;
@@ -330,7 +341,7 @@ public class rasterizer extends  JPanel implements Runnable{
     while (is_running) {
       lastTime = System.nanoTime();
 
-      cam.update_movement(move_left, move_right, move_up, move_down, move_backward, move_forward);
+      update_movement();
 
       repaint();
 
