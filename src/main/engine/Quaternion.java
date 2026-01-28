@@ -19,10 +19,6 @@ public class Quaternion{
     this.y = u.y;
     this.z = u.z;
   }
-  
-  public static void main(String[] args) {
-      
-  }
 
   public Vector3D axis_of_rotation(Vector3D vec){
     Quaternion q = new Quaternion(vec, 0);
@@ -37,13 +33,41 @@ public class Quaternion{
     double sin = Math.sin(half_angle);
 
     axis = axis.normalize();
-    
+
     return new Quaternion(
       cos,
       sin * axis.x,
       sin * axis.y,
       sin * axis.z
     );
+  }
+
+  public Quaternion normalize(Quaternion q) {
+    double norm = q.x * q.x + q.y * q.y + q.z * q.z + q.w * q.w;
+    if (0.0f < norm){
+      double invNorm = Math.pow(norm, -0.5f);
+      
+      q.x *= invNorm;
+      q.y *= invNorm;
+      q.z *= invNorm;
+      q.w *= invNorm;
+
+      return q;
+    }
+
+    return new Quaternion(0.0f, 0.0f, 0.0f, 1.0f);
+  }
+
+  public Matrix to_Matrix(Quaternion q){
+
+    q = normalize(q);
+    
+    return new Matrix(new double[][]{
+      {1.0f - 2.0f*q.y*q.y - 2.0f*q.z*q.z, 2.0f*q.x*q.y - 2.0f*q.z*q.w, 2.0f*q.x*q.z + 2.0f*q.y*q.w, 0.0f},
+      {2.0f*q.x*q.y + 2.0f*q.z*q.w, 1.0f - 2.0f*q.x*q.x - 2.0f*q.z*q.z, 2.0f*q.y*q.z - 2.0f*q.x*q.w, 0.0f},
+      {2.0f*q.x*q.z - 2.0f*q.y*q.w, 2.0f*q.y*q.z + 2.0f*q.x*q.w, 1.0f - 2.0f*q.x*q.x - 2.0f*q.y*q.y, 0.0f},
+      {0.0f, 0.0f, 0.0f, 1.0f}
+    });
   }
 
   public Quaternion multiply_q(Quaternion q){
@@ -59,21 +83,21 @@ public class Quaternion{
       (w1*z2 + x1*y2 - y1*x2 + z1*w2)
     );
   }
-
-  public Quaternion multiply_v(Vector3D v){
-    return null;
-  }
  
   public Quaternion inverse(){
     double magnitude = (this.w*this.w) + (this.x*this.x) + (this.y*this.y) + (this.z*this.z);
     return new Quaternion( this.w, -this.x/magnitude, -this.y/magnitude, -this.z/magnitude);
   }
 
-  public Vector3D get_pure(Quaternion q){
-    return new Vector3D(q.x, q.y, q.z);
+  public Quaternion get_pure(Quaternion q){
+    return new Quaternion(0, q.x, q.y, q.z);
   }
 
   public Quaternion convert_to_quaternion(Vector3D v, double s){
     return new Quaternion(s, v.x, v.y, v.z);
   }  
+
+  public static void main(String[] args) {
+      
+  }
 }
