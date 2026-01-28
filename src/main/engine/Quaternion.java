@@ -6,8 +6,6 @@ public class Quaternion{
   public double z;
   public double w;
 
-  public Vector3D u = new Vector3D(x, y, z);
-
   public Quaternion(double w,double x,double y,double z){
     this.w = w;
     this.x = x;
@@ -17,16 +15,19 @@ public class Quaternion{
 
   public Quaternion(Vector3D u, double w){
     this.w = w;
-    this.u = u;
+    this.x = u.x;
+    this.y = u.y;
+    this.z = u.z;
   }
   
   public static void main(String[] args) {
       
   }
 
-  public Quaternion transform(Vector3D vec){
+  public Vector3D transform(Vector3D vec){
     Quaternion q = new Quaternion(vec, 0);
-    Quaternion t = this.multiply_q(q).inverse();
+    Quaternion rotate = this.multiply_q(q).multiply_q(this.inverse());
+    return new Vector3D(rotate.x, rotate.y, rotate.z);
   }
 
   public static Quaternion quaternion_rotation(Vector3D axis, double theta){
@@ -35,9 +36,14 @@ public class Quaternion{
     double cos = Math.cos(angle);
     double sin = Math.sin(angle);
 
-    double rotate = cos + ((sin * axis.x) + (sin * axis.y) + (sin * axis.z));
-
-    return null;
+    double mag = Math.sqrt(axis.x * axis.x + axis.y * axis.y + axis.z * axis.z);
+    
+    return new Quaternion(
+      cos,
+      sin * axis.x/mag,
+      sin * axis.y/mag,
+      sin * axis.z/mag
+    );
   }
 
   public Quaternion multiply_q(Quaternion q){
@@ -58,13 +64,9 @@ public class Quaternion{
     return null;
   }
  
-  public double inverse(){
-    double magnitude = Math.pow(this.w, 2) + Math.pow(this.x, 2) + Math.pow(this.y, 2) + Math.pow(this.z, 2);
-    double q_conjugate = this.w - this.x - this.y - this.z;
-
-    double inverse = q_conjugate/magnitude;
-
-    return inverse;
+  public Quaternion inverse(){
+    double magnitude = (this.w*this.w) + (this.x*this.x) + (this.y*this.y) + (this.z*this.z);
+    return new Quaternion( this.w, -this.x/magnitude, -this.y/magnitude, -this.z/magnitude);
   }
 
   public Vector3D get_pure(Quaternion q){
