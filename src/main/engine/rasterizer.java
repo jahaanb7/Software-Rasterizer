@@ -52,10 +52,11 @@ public class rasterizer extends  JPanel implements Runnable{
   private double rotationY = 0;
   private double rotationZ = 0;
 
-    //model adjustment
+  //model adjustment
   private double zOffset = 500;
   private double scale = 1.0;
   private double cam_speed = 10;
+  private double mouse_sensitivity = 0.2;
 
 
   //wireframe for model debugging and testing
@@ -128,6 +129,7 @@ public class rasterizer extends  JPanel implements Runnable{
           case KeyEvent.VK_A -> {move_left = true;}
           case KeyEvent.VK_Q -> {move_forward = true;}
           case KeyEvent.VK_E -> {move_backward = true;}
+          case KeyEvent.VK_SPACE -> cam.resetOrientation();
         }
       }
 
@@ -169,36 +171,30 @@ public class rasterizer extends  JPanel implements Runnable{
 
     addMouseMotionListener(new MouseMotionAdapter() {
       @Override
-      public void mouseDragged(MouseEvent mouse){
-        int button = mouse.getButton();
+        public void mouseDragged(MouseEvent mouse) {
+        if (!is_dragging) return;
 
-        if(button == MouseEvent.BUTTON3){
-          int delta_mouse_x = mouse.getX() - last_mouse_x;
-          int delta_mouse_y = mouse.getY() - last_mouse_y;
+        int delta_x = mouse.getX() - last_mouse_x;
+        int delta_y = mouse.getY() - last_mouse_y;
 
-          rotationX += delta_mouse_y * 0.4;
-          rotationY += delta_mouse_x * 0.4;
+        // LEFT BUTTON: Rotate camera using quaternions
+        if ((MouseEvent.BUTTON2) != 0) {
 
-          last_mouse_x = mouse.getX();
-          last_mouse_y = mouse.getY();
-
-          repaint();
+          double yaw = delta_x * mouse_sensitivity;   // Horizontal mouse -> yaw
+          double pitch = delta_y * mouse_sensitivity; // Vertical mouse -> pitch
+          
+          cam.rotate(pitch, yaw);
         }
 
-        if(button == MouseEvent.BUTTON2){
-          int delta_mouse_x = mouse.getX() - last_mouse_x;
-          int delta_mouse_y = mouse.getY() - last_mouse_y;
-
-          rot_v_x += delta_mouse_y * 0.4;
-          rot_v_y += delta_mouse_x * 0.4;
-
-          Quaternion rotate = new Quaternion(0,rot_v_x, rot_v_y, rot_v_z);
-
-          last_mouse_x = mouse.getX();
-          last_mouse_y = mouse.getY();
-
-          repaint(); 
+        // RIGHT BUTTON: Rotate object using Euler angles (legacy system)
+        if ((MouseEvent.BUTTON3) != 0) {
+          rotationX += delta_y * 0.4;
+          rotationY += delta_x * 0.4;
         }
+
+        last_mouse_x = mouse.getX();
+        last_mouse_y = mouse.getY();
+        repaint();
       }
     });
 
@@ -207,8 +203,8 @@ public class rasterizer extends  JPanel implements Runnable{
       public void mouseWheelMoved(MouseWheelEvent e) {
         double scroll = e.getPreciseWheelRotation();
 
-        if (scroll > 0) {cam.cam_position.z += cam_speed;}
-        if(scroll < 0) {cam.cam_position.z -= cam_speed;}
+        if (scroll > 0) {cam.move_k_hat(-cam_speed);}
+        if(scroll < 0) {cam.move_k_hat(cam_speed);}
 
         // prevent model to go behind camera (clipping is not added yet)
         if(cam.cam_position.z > 3) {cam.cam_position.z = 3;}
@@ -218,13 +214,13 @@ public class rasterizer extends  JPanel implements Runnable{
 
   public void update_movement(){
 
-    if(move_left)  {cam.cam_position.x += cam_speed;}
-    if(move_right) {cam.cam_position.x -= cam_speed;}
-    if(move_up)    {cam.cam_position.y += cam_speed;}
-    if(move_down)  {cam.cam_position.y -= cam_speed;}
+    if(move_left)  {cam.move_i_hat(-cam_speed);}
+    if(move_right) {cam.move_i_hat(cam_speed);}
+    if(move_up)    {cam.move_j_hat(cam_speed);}
+    if(move_down)  {cam.move_j_hat(-cam_speed);}
 
-    if(move_backward){cam.cam_position.z -= cam_speed;}
-    if(move_forward){cam.cam_position.z += cam_speed;}
+    if (move_forward)  {cam.move_k_hat(cam_speed);}
+    if (move_backward) {cam.move_k_hat(-cam_speed);}
   }
 
 
@@ -235,6 +231,9 @@ public class rasterizer extends  JPanel implements Runnable{
   }
 
   public void render(Mesh mesh, Matrix matrix, DepthBuffer buffer, BufferedImage screen){
+
+    Matrix viewMatrix = cam.getViewMatrix();
+
     for(Triangle tri : mesh.tris) {
 
       double cameraX = cam.cam_position.x;

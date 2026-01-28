@@ -20,7 +20,7 @@ public class Quaternion{
     this.u = u;
   }
 
-  public Vector3D axis_of_rotation(Vector3D vec){
+  public Vector3D rotate_axis(Vector3D vec){
     Quaternion q = new Quaternion(vec, 0);
     Quaternion rotate = this.multiply_q(q).multiply_q(this.inverse());
     return new Vector3D(rotate.x, rotate.y, rotate.z);
@@ -44,18 +44,16 @@ public class Quaternion{
 
   public Quaternion normalize(Quaternion q) {
     double norm = q.x * q.x + q.y * q.y + q.z * q.z + q.w * q.w;
-    if (0.0f < norm){
-      double invNorm = Math.pow(norm, -0.5f);
-      
-      q.x *= invNorm;
-      q.y *= invNorm;
-      q.z *= invNorm;
-      q.w *= invNorm;
-
-      return q;
+    if (norm > 0.0001) { // Avoid division by zero
+      return new Quaternion(
+        q.w / norm,
+        q.x / norm,
+        q.y / norm,
+        q.z / norm
+      );
     }
 
-    return new Quaternion(0.0f, 0.0f, 0.0f, 1.0f);
+    return new Quaternion(1.0f, 0.0f, 0.0f, 0.0f);
   }
 
   public Matrix to_Matrix(Quaternion q){
@@ -93,7 +91,7 @@ public class Quaternion{
 
     double amount_rotation = (w1*w2 - (Vector3D.dot(v1, v2)));
     Vector3D axis = Vector3D.multiply(w1, v2).add(Vector3D.multiply(w2, v1).add(Vector3D.cross(v1, v2)));
-    
+
     return new Quaternion(axis, amount_rotation);
   }
  
@@ -102,13 +100,39 @@ public class Quaternion{
     return new Quaternion( this.w, -this.x/magnitude, -this.y/magnitude, -this.z/magnitude);
   }
 
-  public Quaternion get_pure(Quaternion q){
-    return new Quaternion(0, q.x, q.y, q.z);
+  public Quaternion get_pure(Vector3D vec){
+    this.w = 0;
+    this.x = vec.x;
+    this.y = vec.y;
+    this.z = vec.z;
+
+    return this;
+  }
+  
+  public Vector3D toEulerAngles() {
+    Vector3D angles = new Vector3D(0, 0, 0);
+    
+    // Pitch (X-axis rotation)
+    double sinp = 2.0 * (w * y - z * x);
+    if (Math.abs(sinp) >= 1) {
+      angles.x = Math.toDegrees(Math.copySign(Math.PI / 2, sinp));
+    } else {
+      angles.x = Math.toDegrees(Math.asin(sinp));
+    }
+    
+    // Yaw (Y-axis rotation)
+    double siny_cosp = 2.0 * (w * z + x * y);
+    double cosy_cosp = 1.0 - 2.0 * (y * y + z * z);
+    angles.y = Math.toDegrees(Math.atan2(siny_cosp, cosy_cosp));
+    
+    // Roll (Z-axis rotation)
+    double sinr_cosp = 2.0 * (w * x + y * z);
+    double cosr_cosp = 1.0 - 2.0 * (x * x + y * y);
+    angles.z = Math.toDegrees(Math.atan2(sinr_cosp, cosr_cosp));
+    
+    return angles;
   }
 
-  public Quaternion convert_to_quaternion(Vector3D v, double s){
-    return new Quaternion(s, v.x, v.y, v.z);
-  }  
 
   public static void main(String[] args) {
       
