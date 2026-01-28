@@ -24,25 +24,25 @@ public class Quaternion{
       
   }
 
-  public Vector3D transform(Vector3D vec){
+  public Vector3D axis_of_rotation(Vector3D vec){
     Quaternion q = new Quaternion(vec, 0);
     Quaternion rotate = this.multiply_q(q).multiply_q(this.inverse());
     return new Vector3D(rotate.x, rotate.y, rotate.z);
   }
 
   public static Quaternion quaternion_rotation(Vector3D axis, double theta){
-    double angle = Math.toRadians(theta/2);
+    double half_angle = Math.toRadians(theta/2);
 
-    double cos = Math.cos(angle);
-    double sin = Math.sin(angle);
+    double cos = Math.cos(half_angle);
+    double sin = Math.sin(half_angle);
 
-    double mag = Math.sqrt(axis.x * axis.x + axis.y * axis.y + axis.z * axis.z);
+    axis = axis.normalize();
     
     return new Quaternion(
       cos,
-      sin * axis.x/mag,
-      sin * axis.y/mag,
-      sin * axis.z/mag
+      sin * axis.x,
+      sin * axis.y,
+      sin * axis.z
     );
   }
 
@@ -75,15 +75,5 @@ public class Quaternion{
 
   public Quaternion convert_to_quaternion(Vector3D v, double s){
     return new Quaternion(s, v.x, v.y, v.z);
-  }
-
-  public void test_rotation(){
-    Quaternion q = new Quaternion(1, 0, 0, 0);
-
-    Vector3D i_hat = new Vector3D(1, 0, 0);
-    Vector3D j_hat = new Vector3D(0, 1, 0);
-    Vector3D k_hat = new Vector3D(0, 0, 1);
-  }
-
-  
+  }  
 }

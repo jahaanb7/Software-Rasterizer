@@ -24,6 +24,7 @@ public class rasterizer extends  JPanel implements Runnable{
 
   LineDrawer drawer = new LineDrawer();
   camera cam = new camera();
+  Quaternion q;
 
   //screen dimensions
   public static final int SCREEN_HEIGHT = 800;
@@ -41,6 +42,10 @@ public class rasterizer extends  JPanel implements Runnable{
   private int last_mouse_x = 0;
   private int last_mouse_y = 0;
   private boolean is_dragging = false;
+  private double rot_v_x = 0;
+  private double rot_v_y = 0;
+  private double rot_v_z = 0;
+  
 
   //Rotation Model
   private double rotationX = 0;
@@ -179,6 +184,21 @@ public class rasterizer extends  JPanel implements Runnable{
 
           repaint();
         }
+
+        if(button == MouseEvent.BUTTON2){
+          int delta_mouse_x = mouse.getX() - last_mouse_x;
+          int delta_mouse_y = mouse.getY() - last_mouse_y;
+
+          rot_v_x += delta_mouse_y * 0.4;
+          rot_v_y += delta_mouse_x * 0.4;
+
+          Quaternion rotate = new Quaternion(0,rot_v_x, rot_v_y, rot_v_z);
+
+          last_mouse_x = mouse.getX();
+          last_mouse_y = mouse.getY();
+
+          repaint(); 
+        }
       }
     });
 
@@ -250,6 +270,8 @@ public class rasterizer extends  JPanel implements Runnable{
         r1.x -= cameraX;      r1.y -= cameraY;      r1.z -= cameraZ;
         r2.x -= cameraX;      r2.y -= cameraY;      r2.z -= cameraZ; 
         r3.x -= cameraX;      r3.y -= cameraY;      r3.z -= cameraZ; 
+
+      
 
         if (r1.z <= near || r2.z <= near || r3.z <= near) {
           continue;
