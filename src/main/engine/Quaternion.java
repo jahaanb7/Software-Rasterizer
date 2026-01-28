@@ -45,12 +45,12 @@ public class Quaternion{
 
   public Quaternion normalize(Quaternion q) {
     double norm = Math.sqrt(q.x * q.x + q.y * q.y + q.z * q.z + q.w * q.w);
-    if (norm > 0.0001) { // Avoid division by zero
+    if (norm > 0.0001) {
       return new Quaternion(
-        q.w / norm,
-        q.x / norm,
-        q.y / norm,
-        q.z / norm
+        q.w/norm,
+        q.x/norm,
+        q.y/norm,
+        q.z/norm
       );
     }
 
@@ -108,30 +108,6 @@ public class Quaternion{
     this.z = vec.z;
 
     return this;
-  }
-  
-  public Vector3D toEulerAngles() {
-    Vector3D angles = new Vector3D(0, 0, 0);
-    
-    // Pitch (X-axis rotation)
-    double sinp = 2.0 * (w * y - z * x);
-    if (Math.abs(sinp) >= 1) {
-      angles.x = Math.toDegrees(Math.copySign(Math.PI / 2, sinp));
-    } else {
-      angles.x = Math.toDegrees(Math.asin(sinp));
-    }
-    
-    // Yaw (Y-axis rotation)
-    double siny_cosp = 2.0 * (w * z + x * y);
-    double cosy_cosp = 1.0 - 2.0 * (y * y + z * z);
-    angles.y = Math.toDegrees(Math.atan2(siny_cosp, cosy_cosp));
-    
-    // Roll (Z-axis rotation)
-    double sinr_cosp = 2.0 * (w * x + y * z);
-    double cosr_cosp = 1.0 - 2.0 * (x * x + y * y);
-    angles.z = Math.toDegrees(Math.atan2(sinr_cosp, cosr_cosp));
-    
-    return angles;
   }
 
   public Quaternion conjugate(){

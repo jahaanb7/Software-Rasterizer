@@ -60,6 +60,14 @@ class Vector3D{
     return new Vector4D(nx, ny, nz, nw);
   }
 
+  public static Vector3D center(Vector4D v1, Vector4D v2, Vector4D v3){
+    return new Vector3D(
+    (v1.x + v2.x + v3.x)/3.0,
+    (v1.y + v2.y + v3.y)/3.0,
+    (v1.z + v2.z + v3.z)/3.0);
+  }
+
+
   public static double getDeterminant(Vector3D a, Vector3D b, Vector3D p){
     Vector3D ab = new Vector3D(b.x, b.y, b.z);
     ab.sub(a);

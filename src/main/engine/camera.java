@@ -64,31 +64,20 @@ public class camera{
     update_cam();
   }
 
-  public Matrix getViewMatrix(){
-    // Convert orientation quaternion to rotation matrix
-    Matrix rotationMatrix = orient.to_Matrix(orient);
-    
-    // Create translation matrix
-    Matrix translationMatrix = Matrix.translation(-cam_position.x, -cam_position.y, -cam_position.z);
-
-    return rotationMatrix.matrix_mul(translationMatrix);
-  }
-
   public void resetOrientation() {
     orient = new Quaternion(1, 0, 0, 0);
     update_cam();
   }
 
-    public Vector3D worldToCamera3(Vector3D worldPoint) {
-    // Step 1: Translate - move point relative to camera position
+  public Vector3D worldToCamera3(Vector3D worldPoint) {
+    //move point relative to camera position
     Vector3D translated = new Vector3D(
       worldPoint.x - cam_position.x,
       worldPoint.y - cam_position.y,
       worldPoint.z - cam_position.z
     );
     
-    // Step 2: Rotate - apply inverse camera rotation
-    // We use the conjugate (inverse for unit quaternions)
+    //apply inverse camera rotation
     Quaternion inverseOrientation = orient.conjugate();
     Vector3D rotated = inverseOrientation.rotate_axis(translated);
     
@@ -96,13 +85,13 @@ public class camera{
   }
 
   public Vector4D worldToCamera4(Vector4D worldPoint) {
-    // Convert to Vector3D, transform, convert back
+
+    // Convert to vector3D, transform it and then convert back
     Vector3D point3D = new Vector3D(worldPoint.x, worldPoint.y, worldPoint.z);
     Vector3D transformed = worldToCamera3(point3D);
+
     return new Vector4D(transformed.x, transformed.y, transformed.z, worldPoint.w);
   }
-
-  public void p(){}
 
   public void move_k_hat(double amount){
     cam_position.x += k_hat.x * amount;
@@ -130,16 +119,6 @@ public class camera{
   }
   public Vector3D get_jhat(){
     return j_hat;
-  }
-
-  public double get_x(){ 
-    return cam_position.x; 
-  }
-  public double get_y(){ 
-    return cam_position.y; 
-  }
-  public double get_z(){ 
-    return cam_position.z; 
   }
 
   public Vector3D get_position() {

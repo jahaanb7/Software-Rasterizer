@@ -230,8 +230,6 @@ public class rasterizer extends  JPanel implements Runnable{
 
   public void render(Mesh mesh, Matrix matrix, DepthBuffer buffer, BufferedImage screen){
 
-    Matrix viewMatrix = cam.getViewMatrix();
-
     for(Triangle tri : mesh.tris) {
 
       double cameraX = cam.cam_position.x;
@@ -257,11 +255,7 @@ public class rasterizer extends  JPanel implements Runnable{
       //creates a cross product (surface normal) from the two edges that is perpendicular
       Vector3D normal = (Vector3D.cross(a, b)).normalize(); 
     
-      Vector3D center = new Vector3D(
-        (r1.x + r2.x + r3.x)/3.0,
-        (r1.y + r2.y + r3.y)/3.0,
-        (r1.z + r2.z + r3.z)/3.0
-      );
+      Vector3D center = Vector3D.center(r1, r2, r3);
      
       //represents the postion of camera
       Vector3D view = new Vector3D(cameraX - center.x, cameraY - center.y, cameraZ - center.z);
