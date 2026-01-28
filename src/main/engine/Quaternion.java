@@ -6,6 +6,8 @@ public class Quaternion{
   public double z;
   public double w;
 
+  public Vector3D u = new Vector3D(x, y, z);
+
   public Quaternion(double w,double x,double y,double z){
     this.w = w;
     this.x = x;
@@ -15,9 +17,7 @@ public class Quaternion{
 
   public Quaternion(Vector3D u, double w){
     this.w = w;
-    this.x = u.x;
-    this.y = u.y;
-    this.z = u.z;
+    this.u = u;
   }
 
   public Vector3D axis_of_rotation(Vector3D vec){
@@ -82,6 +82,19 @@ public class Quaternion{
       (w1*y2 - x1*z2 + y1*w2 + z1*x2),
       (w1*z2 + x1*y2 - y1*x2 + z1*w2)
     );
+  }
+
+  public Quaternion mul_by_vec(Quaternion q){
+    double w1 = this.w;
+    double w2 = q.w;
+
+    Vector3D v1 = this.u;
+    Vector3D v2 = q.u;
+
+    double amount_rotation = (w1*w2 - (Vector3D.dot(v1, v2)));
+    Vector3D axis = Vector3D.multiply(w1, v2).add(Vector3D.multiply(w2, v1).add(Vector3D.cross(v1, v2)));
+    
+    return new Quaternion(axis, amount_rotation);
   }
  
   public Quaternion inverse(){
