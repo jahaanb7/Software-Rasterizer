@@ -177,17 +177,15 @@ public class rasterizer extends  JPanel implements Runnable{
         int delta_x = mouse.getX() - last_mouse_x;
         int delta_y = mouse.getY() - last_mouse_y;
 
-        // LEFT BUTTON: Rotate camera using quaternions
-        if ((MouseEvent.BUTTON2) != 0) {
+        if ((mouse.getModifiersEx() & MouseEvent.BUTTON1_DOWN_MASK) != 0) {
 
-          double yaw = delta_x * mouse_sensitivity;   // Horizontal mouse -> yaw
-          double pitch = delta_y * mouse_sensitivity; // Vertical mouse -> pitch
+          double yaw = delta_x * mouse_sensitivity;   
+          double pitch = delta_y * mouse_sensitivity; 
           
           cam.rotate(pitch, yaw);
         }
 
-        // RIGHT BUTTON: Rotate object using Euler angles (legacy system)
-        if ((MouseEvent.BUTTON3) != 0) {
+        if ((mouse.getModifiersEx() & MouseEvent.BUTTON3_DOWN_MASK) != 0) {
           rotationX += delta_y * 0.4;
           rotationY += delta_x * 0.4;
         }
@@ -277,11 +275,9 @@ public class rasterizer extends  JPanel implements Runnable{
         double shading = Vector3D.dot(normal, light_dir) * 0.9;
 
         //moves the camera in each axis for each vertice of triangle
-        r1.x -= cameraX;      r1.y -= cameraY;      r1.z -= cameraZ;
-        r2.x -= cameraX;      r2.y -= cameraY;      r2.z -= cameraZ; 
-        r3.x -= cameraX;      r3.y -= cameraY;      r3.z -= cameraZ; 
-
-      
+        r1 = cam.worldToCamera4(r1);
+        r2 = cam.worldToCamera4(r2);
+        r3 = cam.worldToCamera4(r3);
 
         if (r1.z <= near || r2.z <= near || r3.z <= near) {
           continue;

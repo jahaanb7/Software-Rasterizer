@@ -17,8 +17,9 @@ public class Quaternion{
 
   public Quaternion(Vector3D u, double w){
     this.w = w;
-    this.u = u;
-  }
+    this.x = u.x;
+    this.y = u.y;
+    this.z = u.z;  }
 
   public Vector3D rotate_axis(Vector3D vec){
     Quaternion q = new Quaternion(vec, 0);
@@ -43,7 +44,7 @@ public class Quaternion{
   }
 
   public Quaternion normalize(Quaternion q) {
-    double norm = q.x * q.x + q.y * q.y + q.z * q.z + q.w * q.w;
+    double norm = Math.sqrt(q.x * q.x + q.y * q.y + q.z * q.z + q.w * q.w);
     if (norm > 0.0001) { // Avoid division by zero
       return new Quaternion(
         q.w / norm,
@@ -133,6 +134,9 @@ public class Quaternion{
     return angles;
   }
 
+  public Quaternion conjugate(){
+    return new Quaternion(w, -x, -y, -z);
+  }
 
   public static void main(String[] args) {
       

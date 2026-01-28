@@ -24,7 +24,7 @@ public class camera{
     this.cam_position = new Vector3D(x, y, z);
     this.cam_speed = camera_speed;
     this.orient = new Quaternion(1,0,0,0);
-    
+
     update_cam();
   }
 
@@ -77,6 +77,29 @@ public class camera{
   public void resetOrientation() {
     orient = new Quaternion(1, 0, 0, 0);
     update_cam();
+  }
+
+    public Vector3D worldToCamera3(Vector3D worldPoint) {
+    // Step 1: Translate - move point relative to camera position
+    Vector3D translated = new Vector3D(
+      worldPoint.x - cam_position.x,
+      worldPoint.y - cam_position.y,
+      worldPoint.z - cam_position.z
+    );
+    
+    // Step 2: Rotate - apply inverse camera rotation
+    // We use the conjugate (inverse for unit quaternions)
+    Quaternion inverseOrientation = orient.conjugate();
+    Vector3D rotated = inverseOrientation.rotate_axis(translated);
+    
+    return rotated;
+  }
+
+  public Vector4D worldToCamera4(Vector4D worldPoint) {
+    // Convert to Vector3D, transform, convert back
+    Vector3D point3D = new Vector3D(worldPoint.x, worldPoint.y, worldPoint.z);
+    Vector3D transformed = worldToCamera3(point3D);
+    return new Vector4D(transformed.x, transformed.y, transformed.z, worldPoint.w);
   }
 
   public void p(){}
