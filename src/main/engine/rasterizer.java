@@ -58,7 +58,6 @@ public class rasterizer extends  JPanel implements Runnable{
   private double cam_speed = 10;
   private double mouse_sensitivity = 0.2;
 
-
   //wireframe for model debugging and testing
   private boolean wireframe_mode = false;
 
@@ -130,6 +129,14 @@ public class rasterizer extends  JPanel implements Runnable{
           case KeyEvent.VK_Q -> {move_forward = true;}
           case KeyEvent.VK_E -> {move_backward = true;}
           case KeyEvent.VK_SPACE -> cam.resetOrientation();
+          case KeyEvent.VK_R -> {
+            if(!wireframe_mode){
+              wireframe_mode = true;
+            }
+            else if(wireframe_mode){
+              wireframe_mode = false;
+            }
+          }
         }
       }
 
@@ -212,8 +219,8 @@ public class rasterizer extends  JPanel implements Runnable{
 
   public void update_movement(){
 
-    if(move_left)  {cam.move_i_hat(-cam_speed);}
-    if(move_right) {cam.move_i_hat(cam_speed);}
+    if(move_left)  {cam.move_i_hat(cam_speed);}
+    if(move_right) {cam.move_i_hat(-cam_speed);}
     if(move_up)    {cam.move_j_hat(cam_speed);}
     if(move_down)  {cam.move_j_hat(-cam_speed);}
 
