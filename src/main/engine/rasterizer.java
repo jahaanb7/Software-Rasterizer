@@ -53,9 +53,9 @@ public class rasterizer extends  JPanel implements Runnable{
   private double rotationZ = 0;
 
   //model adjustment
-  private double zOffset = 5;
+  private double zOffset = 1;
   private double scale = 1;
-  private double cam_speed = 10;
+  private double cam_speed = 0.10;
   private double mouse_sensitivity = 0.2;
 
   //wireframe for model debugging and testing
@@ -83,6 +83,7 @@ public class rasterizer extends  JPanel implements Runnable{
   Mesh rabbit = new Mesh(); // Rabbit model
   Mesh sphere = new Mesh(); // Ico-Sphere model
   Mesh maxPlanck = new Mesh(); // Max Planck Head model
+  Mesh face = new Mesh();
 
   private DepthBuffer buffer = new DepthBuffer(SCREEN_WIDTH, SCREEN_HEIGHT);
 
@@ -104,12 +105,14 @@ public class rasterizer extends  JPanel implements Runnable{
     rabbit.tris.addAll(OBJLoader.loadOBJ(getClass().getResourceAsStream("/resources/rabbit.obj")));
     sphere.tris.addAll(OBJLoader.loadOBJ(getClass().getResourceAsStream("/resources/sphere.obj")));
     maxPlanck.tris.addAll(OBJLoader.loadOBJ(getClass().getResourceAsStream("/resources/MaxPlanck.obj")));
+    face.tris.addAll(OBJLoader.loadOBJ(getClass().getResourceAsStream("/resources/face.obj")));
+
 
     try {
       BufferedImage texture = javax.imageio.ImageIO.read(
-            getClass().getResourceAsStream("/resources/Minecraft.png")
+            getClass().getResourceAsStream("/resources/face_tex.png")
         );
-        cube.set_texture(texture);
+        face.set_texture(texture);
         System.out.println("✅ Texture loaded!");
     } 
     catch (Exception e) {
@@ -389,7 +392,7 @@ public class rasterizer extends  JPanel implements Runnable{
 
     buffer.init();
 
-    render(cube, rotation, buffer, screen);
+    render(face, rotation, buffer, screen);
 
     g.drawImage(screen, 0, 0, null);
   }
