@@ -60,6 +60,7 @@ public class rasterizer extends  JPanel implements Runnable{
 
   //wireframe for model debugging and testing
   private boolean wireframe_mode = false;
+    private boolean texture_mode = true;
 
   //projection matrix
   private final int fov = 90;
@@ -323,6 +324,12 @@ public class rasterizer extends  JPanel implements Runnable{
           drawer.drawline(screen, (int)A.x, (int)A.y, (int)B.x, (int)B.y);
           drawer.drawline(screen, (int)B.x, (int)B.y, (int)C.x, (int)C.y);     // This is for wireframe and for debugging
           drawer.drawline(screen, (int)C.x, (int)C.y, (int)A.x, (int)A.y);
+        }
+        else if(texture_mode && mesh.is_texture){
+            drawer.draw_triangle_textured(A, B, C,
+            tri.uv1, tri.uv2, tri.uv3,
+            mesh.texture, buffer, screen, shading
+          );
         }
         else{
           drawer.draw_triangle(A, B, C, buffer, screen, shadedColor, shadedColor, shadedColor);

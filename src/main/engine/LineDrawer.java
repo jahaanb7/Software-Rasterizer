@@ -185,4 +185,95 @@ class LineDrawer{
 
     return new Color(Math.min(255,r), Math.min(255,g), Math.min(255,b));
   }
+
+  public void draw_triangle_textured(Vector3D v1, Vector3D v2, Vector3D v3,
+                                      Vector2D uv1, Vector2D uv2, Vector2D uv3,
+                                      BufferedImage texture,
+                                      DepthBuffer buffer, BufferedImage screen,
+                                      double shading) {
+    
+    // Bounding box
+    int minX = (int)Math.floor(Math.min(v1.x, Math.min(v2.x, v3.x)));
+    int maxX = (int)Math.ceil(Math.max(v1.x, Math.max(v2.x, v3.x)));
+    int minY = (int)Math.floor(Math.min(v1.y, Math.min(v2.y, v3.y)));
+    int maxY = (int)Math.ceil(Math.max(v1.y, Math.max(v2.y, v3.y)));
+
+    double area = edge_function(v1, v2, v3);
+    
+    if (Math.abs(area) < 0.0001) return; // Degenerate triangle
+
+    // Scan all pixels in bounding box
+    for (int y = minY; y <= maxY; y++) {
+      for (int x = minX; x <= maxX; x++) {
+        Vector3D p = new Vector3D(x + 0.5, y + 0.5, 0);
+
+        // Barycentric weights
+        double w1 = edge_function(v2, v3, p) / area;
+        double w2 = edge_function(v3, v1, p) / area;
+        double w3 = edge_function(v1, v2, p) / area;
+
+        // Point inside triangle
+        if (w1 >= 0 && w2 >= 0 && w3 >= 0) {
+          // Interpolate depth
+          double z = w1 * v1.z + w2 * v2.z + w3 * v3.z;
+          Vector3D v = new Vector3D(x, y, z);
+          
+          // Depth test
+          if (buffer.depthTest(v)) {
+            // Interpolate UV coordinates
+            double u = w1 * uv1.u + w2 * uv2.u + w3 * uv3.u;
+            double v_coord = w1 * uv1.v + w2 * uv2.v + w3 * uv3.v;
+            
+            // Sample texture
+            Color texColor = sampleTexture(texture, u, v_coord);
+            
+            // Apply shading to texture color
+            Color shadedColor = applyShading(texColor, shading);
+
+            if (x >= 0 && x < screen.getWidth() && y >= 0 && y < screen.getHeight()) { 
+              screen.setRGB(x, y, shadedColor.getRGB());
+            }
+          }
+        }
+      }
+    }
+  }
+
+    private Color sampleTexture(BufferedImage texture, double u, double v) {
+    if (texture == null) {
+      return Color.MAGENTA; // Debug color for missing texture
+    }
+
+    // Wrap UVs to [0, 1] range (repeating texture)
+    u = u - Math.floor(u);
+    v = v - Math.floor(v);
+    
+    // Convert UV to pixel coordinates
+    int texX = (int)(u * (texture.getWidth() - 1));
+    int texY = (int)((1.0 - v) * (texture.getHeight() - 1)); // Flip V coordinate
+    
+    // Clamp to texture bounds (safety)
+    texX = Math.max(0, Math.min(texture.getWidth() - 1, texX));
+    texY = Math.max(0, Math.min(texture.getHeight() - 1, texY));
+    
+    return new Color(texture.getRGB(texX, texY));
+  }
+
+  /**
+   * Apply lighting/shading to a color
+   */
+  private Color applyShading(Color color, double shading) {
+    // Clamp shading to [0, 1]
+    shading = Math.max(0.0, Math.min(1.0, shading));
+    
+    int r = (int)(color.getRed() * shading);
+    int g = (int)(color.getGreen() * shading);
+    int b = (int)(color.getBlue() * shading);
+    
+    r = Math.max(0, Math.min(255, r));
+    g = Math.max(0, Math.min(255, g));
+    b = Math.max(0, Math.min(255, b));
+    
+    return new Color(r, g, b);
+  }
 }
