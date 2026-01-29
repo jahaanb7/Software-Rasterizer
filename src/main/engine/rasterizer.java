@@ -53,7 +53,7 @@ public class rasterizer extends  JPanel implements Runnable{
   private double rotationZ = 0;
 
   //model adjustment
-  private double zOffset = 1;
+  private double zOffset = 2;
   private double scale = 1;
   private double cam_speed = 0.10;
   private double mouse_sensitivity = 0.2;
@@ -113,10 +113,10 @@ public class rasterizer extends  JPanel implements Runnable{
             getClass().getResourceAsStream("/resources/face_tex.png")
         );
         face.set_texture(texture);
-        System.out.println("✅ Texture loaded!");
+        System.out.println("________________Texture loaded!__________________");
     } 
     catch (Exception e) {
-        System.out.println("❌ Failed: " + e.getMessage());
+        System.out.println("___________________Failed: _________________________" + e.getMessage());
     }
 
     setPreferredSize(new Dimension(SCREEN_WIDTH, SCREEN_HEIGHT));

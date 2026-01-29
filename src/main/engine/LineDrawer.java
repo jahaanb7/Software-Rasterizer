@@ -200,34 +200,33 @@ class LineDrawer{
 
     double area = edge_function(v1, v2, v3);
     
-    if (Math.abs(area) < 0.0001) return; // Degenerate triangle
+    if (Math.abs(area) < 0.0001) return;
 
-    // Scan all pixels in bounding box
+    //Scan Line, and each pixel within scanline
     for (int y = minY; y <= maxY; y++) {
       for (int x = minX; x <= maxX; x++) {
         Vector3D p = new Vector3D(x + 0.5, y + 0.5, 0);
 
-        // Barycentric weights
+        //Barycentric weights
         double w1 = edge_function(v2, v3, p) / area;
         double w2 = edge_function(v3, v1, p) / area;
         double w3 = edge_function(v1, v2, p) / area;
 
-        // Point inside triangle
         if (w1 >= 0 && w2 >= 0 && w3 >= 0) {
-          // Interpolate depth
+          //interpolate depth
           double z = w1 * v1.z + w2 * v2.z + w3 * v3.z;
           Vector3D v = new Vector3D(x, y, z);
           
-          // Depth test
+          //depth-buffer
           if (buffer.depthTest(v)) {
-            // Interpolate UV coordinates
+
+            //interpolate uv
             double u = w1 * uv1.u + w2 * uv2.u + w3 * uv3.u;
             double v_coord = w1 * uv1.v + w2 * uv2.v + w3 * uv3.v;
             
-            // Sample texture
             Color texColor = sampleTexture(texture, u, v_coord);
             
-            // Apply shading to texture color
+            //apply shading
             Color shadedColor = applyShading(texColor, shading);
 
             if (x >= 0 && x < screen.getWidth() && y >= 0 && y < screen.getHeight()) { 
@@ -239,31 +238,29 @@ class LineDrawer{
     }
   }
 
-    private Color sampleTexture(BufferedImage texture, double u, double v) {
+  private Color sampleTexture(BufferedImage texture, double u, double v) {
+    //debug measure
     if (texture == null) {
-      return Color.MAGENTA; // Debug color for missing texture
+      return Color.MAGENTA;
     }
 
-    // Wrap UVs to [0, 1] range (repeating texture)
+    // [0, 1] range
     u = u - Math.floor(u);
     v = v - Math.floor(v);
     
-    // Convert UV to pixel coordinates
+    // to pixel coordinates
     int texX = (int)(u * (texture.getWidth() - 1));
     int texY = (int)((1.0 - v) * (texture.getHeight() - 1)); // Flip V coordinate
     
-    // Clamp to texture bounds (safety)
+    // clamp
     texX = Math.max(0, Math.min(texture.getWidth() - 1, texX));
     texY = Math.max(0, Math.min(texture.getHeight() - 1, texY));
     
     return new Color(texture.getRGB(texX, texY));
   }
 
-  /**
-   * Apply lighting/shading to a color
-   */
   private Color applyShading(Color color, double shading) {
-    // Clamp shading to [0, 1]
+    //clamp to [0, 1]
     shading = Math.max(0.0, Math.min(1.0, shading));
     
     int r = (int)(color.getRed() * shading);
