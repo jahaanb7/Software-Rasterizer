@@ -12,6 +12,8 @@ import java.awt.event.MouseMotionAdapter;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
 import java.awt.image.BufferedImage;
+import java.io.File;
+import javax.imageio.ImageIO;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
@@ -98,11 +100,21 @@ public class rasterizer extends  JPanel implements Runnable{
   }
 
   public rasterizer(){
+
     monkey.tris.addAll(OBJLoader.loadOBJ(getClass().getResourceAsStream("/resources/monkey.obj")));
     homer.tris.addAll(OBJLoader.loadOBJ(getClass().getResourceAsStream("/resources/homer.obj")));
     rabbit.tris.addAll(OBJLoader.loadOBJ(getClass().getResourceAsStream("/resources/rabbit.obj")));
     sphere.tris.addAll(OBJLoader.loadOBJ(getClass().getResourceAsStream("/resources/sphere.obj")));
     maxPlanck.tris.addAll(OBJLoader.loadOBJ(getClass().getResourceAsStream("/resources/MaxPlanck.obj")));
+
+    try {
+      BufferedImage texture = ImageIO.read(new File("/resources/Minecraft.png"));
+      homer.set_texture(texture);
+      System.out.println(" It worked");
+      } 
+    catch (Exception e) {
+        System.out.println("Error" + e.getMessage());
+      }
 
     setPreferredSize(new Dimension(SCREEN_WIDTH, SCREEN_HEIGHT));
     setBackground(Color.WHITE);
