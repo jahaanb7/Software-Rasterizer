@@ -268,6 +268,11 @@ public class rasterizer extends  JPanel implements Runnable{
       r1.z += zOffset;
       r2.z += zOffset;
       r3.z += zOffset;
+
+      //moves the camera in each axis for each vertice of triangle
+      r1 = cam.worldToCamera4(r1);
+      r2 = cam.worldToCamera4(r2);
+      r3 = cam.worldToCamera4(r3);
     
       Vector3D a = new Vector3D((r2.x - r1.x), (r2.y - r1.y), (r2.z - r1.z)); // Edge A for this triangle
       Vector3D b = new Vector3D((r3.x - r1.x), (r3.y - r1.y), (r3.z - r1.z)); // Edge B for this triangle
@@ -287,11 +292,6 @@ public class rasterizer extends  JPanel implements Runnable{
       
         // calculates the dot product between the each surface normal and light direction from camera
         double shading = Vector3D.dot(normal, light_dir) * 0.9;
-
-        //moves the camera in each axis for each vertice of triangle
-        r1 = cam.worldToCamera4(r1);
-        r2 = cam.worldToCamera4(r2);
-        r3 = cam.worldToCamera4(r3);
 
         if (r1.z <= near || r2.z <= near || r3.z <= near) {
           continue;
