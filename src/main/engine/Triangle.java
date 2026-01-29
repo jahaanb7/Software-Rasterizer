@@ -23,5 +23,9 @@ public class Triangle{
     this.v1 = v1;
     this.v2 = v2;
     this.v3 = v3;
+
+    this.uv1 = new Vector2D(0, 0);
+    this.uv2 = new Vector2D(1, 0);
+    this.uv3 = new Vector2D(0.5, 1);
   }
 }

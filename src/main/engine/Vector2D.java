@@ -1,12 +1,12 @@
 package src.main.engine;
 
 public class Vector2D{
-  public double x;
-  public double y;
+  public double u;
+  public double v;
 
-  public Vector2D(double x, double y){
-    this.x = x;
-    this.y = y;
+  public Vector2D(double u, double v){
+    this.u = u;
+    this.v = v;
   }
 
   public static Vector2D interpolate(Vector2D uv1, Vector2D uv2, Vector2D uv3, 
