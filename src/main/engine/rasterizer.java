@@ -54,8 +54,8 @@ public class rasterizer extends  JPanel implements Runnable{
 
   //model adjustment
   private double zOffset = 5;
-  private double scale = 1.0;
-  private double cam_speed = 0.10;
+  private double scale = 1;
+  private double cam_speed = 10;
   private double mouse_sensitivity = 0.2;
 
   //wireframe for model debugging and testing
@@ -106,10 +106,10 @@ public class rasterizer extends  JPanel implements Runnable{
     maxPlanck.tris.addAll(OBJLoader.loadOBJ(getClass().getResourceAsStream("/resources/MaxPlanck.obj")));
 
     try {
-        BufferedImage texture = javax.imageio.ImageIO.read(
+      BufferedImage texture = javax.imageio.ImageIO.read(
             getClass().getResourceAsStream("/resources/Minecraft.png")
         );
-        monkey.set_texture(texture);
+        cube.set_texture(texture);
         System.out.println("✅ Texture loaded!");
     } 
     catch (Exception e) {
@@ -286,8 +286,12 @@ public class rasterizer extends  JPanel implements Runnable{
       Vector3D view = new Vector3D(cameraX - center.x, cameraY - center.y, cameraZ - center.z);
       double facing_cam = Vector3D.dot(normal, view);
 
-      if(facing_cam > 0){
-      
+      if(Math.abs(facing_cam) > 0.0001){
+
+        if(facing_cam < 0){
+          normal = new Vector3D(-normal.x, -normal.y, -normal.z);
+        }
+        
         Vector3D light_dir = new Vector3D(0,0 ,-1.0).normalize(); // vector that points from camera
       
         // calculates the dot product between the each surface normal and light direction from camera
@@ -385,7 +389,7 @@ public class rasterizer extends  JPanel implements Runnable{
 
     buffer.init();
 
-    render(monkey, rotation, buffer, screen);
+    render(cube, rotation, buffer, screen);
 
     g.drawImage(screen, 0, 0, null);
   }
