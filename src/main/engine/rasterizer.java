@@ -60,7 +60,7 @@ public class rasterizer extends  JPanel implements Runnable{
 
   //wireframe for model debugging and testing
   private boolean wireframe_mode = false;
-    private boolean texture_mode = false;
+    private boolean texture_mode = true;
 
   //projection matrix
   private final int fov = 90;
@@ -100,7 +100,7 @@ public class rasterizer extends  JPanel implements Runnable{
   public rasterizer(){
 
     monkey.tris.addAll(OBJLoader.loadOBJ(getClass().getResourceAsStream("/resources/monkey.obj")));
-    cube.tris.addAll(OBJLoader.loadOBJ(getClass().getResourceAsStream("/resources/cube.obj")));
+    cube.tris.addAll(OBJLoader.loadOBJ(getClass().getResourceAsStream("/resources/homer.obj")));
     rabbit.tris.addAll(OBJLoader.loadOBJ(getClass().getResourceAsStream("/resources/rabbit.obj")));
     sphere.tris.addAll(OBJLoader.loadOBJ(getClass().getResourceAsStream("/resources/sphere.obj")));
     maxPlanck.tris.addAll(OBJLoader.loadOBJ(getClass().getResourceAsStream("/resources/MaxPlanck.obj")));
@@ -109,7 +109,7 @@ public class rasterizer extends  JPanel implements Runnable{
         BufferedImage texture = javax.imageio.ImageIO.read(
             getClass().getResourceAsStream("/resources/Minecraft.png")
         );
-        cube.set_texture(texture);
+        monkey.set_texture(texture);
         System.out.println("✅ Texture loaded!");
     } 
     catch (Exception e) {
@@ -385,7 +385,7 @@ public class rasterizer extends  JPanel implements Runnable{
 
     buffer.init();
 
-    render(cube, rotation, buffer, screen);
+    render(monkey, rotation, buffer, screen);
 
     g.drawImage(screen, 0, 0, null);
   }
