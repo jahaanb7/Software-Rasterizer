@@ -12,8 +12,6 @@ import java.awt.event.MouseMotionAdapter;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
 import java.awt.image.BufferedImage;
-import java.io.File;
-import javax.imageio.ImageIO;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
@@ -55,14 +53,14 @@ public class rasterizer extends  JPanel implements Runnable{
   private double rotationZ = 0;
 
   //model adjustment
-  private double zOffset = 500;
+  private double zOffset = 5;
   private double scale = 1.0;
-  private double cam_speed = 10;
+  private double cam_speed = 0.10;
   private double mouse_sensitivity = 0.2;
 
   //wireframe for model debugging and testing
   private boolean wireframe_mode = false;
-    private boolean texture_mode = true;
+    private boolean texture_mode = false;
 
   //projection matrix
   private final int fov = 90;
@@ -81,7 +79,7 @@ public class rasterizer extends  JPanel implements Runnable{
 
   // 3D models
   Mesh monkey = new Mesh(); //blender monkey  model
-  Mesh homer = new Mesh(); // Homer Simpson model
+  Mesh cube = new Mesh(); // Homer Simpson model
   Mesh rabbit = new Mesh(); // Rabbit model
   Mesh sphere = new Mesh(); // Ico-Sphere model
   Mesh maxPlanck = new Mesh(); // Max Planck Head model
@@ -102,19 +100,21 @@ public class rasterizer extends  JPanel implements Runnable{
   public rasterizer(){
 
     monkey.tris.addAll(OBJLoader.loadOBJ(getClass().getResourceAsStream("/resources/monkey.obj")));
-    homer.tris.addAll(OBJLoader.loadOBJ(getClass().getResourceAsStream("/resources/homer.obj")));
+    cube.tris.addAll(OBJLoader.loadOBJ(getClass().getResourceAsStream("/resources/cube.obj")));
     rabbit.tris.addAll(OBJLoader.loadOBJ(getClass().getResourceAsStream("/resources/rabbit.obj")));
     sphere.tris.addAll(OBJLoader.loadOBJ(getClass().getResourceAsStream("/resources/sphere.obj")));
     maxPlanck.tris.addAll(OBJLoader.loadOBJ(getClass().getResourceAsStream("/resources/MaxPlanck.obj")));
 
     try {
-      BufferedImage texture = ImageIO.read(new File("/resources/Minecraft.png"));
-      homer.set_texture(texture);
-      System.out.println(" It worked");
-      } 
+        BufferedImage texture = javax.imageio.ImageIO.read(
+            getClass().getResourceAsStream("/resources/Minecraft.png")
+        );
+        cube.set_texture(texture);
+        System.out.println("✅ Texture loaded!");
+    } 
     catch (Exception e) {
-        System.out.println("Error" + e.getMessage());
-      }
+        System.out.println("❌ Failed: " + e.getMessage());
+    }
 
     setPreferredSize(new Dimension(SCREEN_WIDTH, SCREEN_HEIGHT));
     setBackground(Color.WHITE);
@@ -385,7 +385,7 @@ public class rasterizer extends  JPanel implements Runnable{
 
     buffer.init();
 
-    render(maxPlanck, rotation, buffer, screen);
+    render(cube, rotation, buffer, screen);
 
     g.drawImage(screen, 0, 0, null);
   }
