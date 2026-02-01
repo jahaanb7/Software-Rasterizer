@@ -48,11 +48,6 @@ java -cp bin src.main.engine.rasterizer
 
 ### Download Pre-built Releases
 
-Pre-built executables are available for Windows and macOS:
-
-- **Windows**: Download the `.zip` file, extract, and run `GraphicsEngine.exe`
-- **macOS**: Download the `.dmg` file, mount it, and drag to Applications
-
 [Download Latest Release](https://github.com/jahaanb7/Software-Rasterizer/releases)
 
 ## Project Structure
@@ -123,11 +118,11 @@ where:
 
 ### Rotation Matrices
 
+### Quaternions (Camera)
+
 ### Backface Culling
 
 ### Lighting Model
-
-Simple directional lighting:
 
 ## Loading Your Own Models
 
