@@ -70,6 +70,7 @@ public class camera{
   }
 
   public Vector3D worldToCamera3(Vector3D worldPoint) {
+    
     //move point relative to camera position
     Vector3D translated = new Vector3D(
       worldPoint.x - cam_position.x,

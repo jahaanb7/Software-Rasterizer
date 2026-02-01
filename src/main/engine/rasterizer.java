@@ -17,14 +17,17 @@ import javax.swing.JPanel;
 
 /*
   3D Graphics Engine - Software Rasterizer
-  Includes: Camera Movement, Model Rotations, Perspective Projection, Backface-culling, and shading
+
+  Includes: 
+  Camera Movement, Model Rotations, Perspective Projection, 
+  Backface-culling, Shading, Camera Rotation and movement
+  OBJ file Loader for any model 
 */
 
 public class rasterizer extends  JPanel implements Runnable{
 
   LineDrawer drawer = new LineDrawer();
   camera cam = new camera();
-  Quaternion q;
 
   //screen dimensions
   public static final int SCREEN_HEIGHT = 800;
@@ -42,11 +45,7 @@ public class rasterizer extends  JPanel implements Runnable{
   private int last_mouse_x = 0;
   private int last_mouse_y = 0;
   private boolean is_dragging = false;
-  private double rot_v_x = 0;
-  private double rot_v_y = 0;
-  private double rot_v_z = 0;
   
-
   //Rotation Model
   private double rotationX = 0;
   private double rotationY = 0;
@@ -60,7 +59,7 @@ public class rasterizer extends  JPanel implements Runnable{
 
   //wireframe for model debugging and testing
   private boolean wireframe_mode = false;
-    private boolean texture_mode = true;
+  private boolean texture_mode = true;
 
   //projection matrix
   private final int fov = 90;
@@ -72,7 +71,6 @@ public class rasterizer extends  JPanel implements Runnable{
     
   //rendering variables
   private boolean is_running = false;
-  private final double rotation_speed = 1;
   private final int fps = 60;
   private final long frame_time = 1_000_000_000L/fps;
   Thread gameThread;
@@ -132,6 +130,8 @@ public class rasterizer extends  JPanel implements Runnable{
 
     (WASD for y-axis and x-axis movement)
     (QE for zooming in and out)
+    (Space to center model)
+    (R for wireframe mode)
     */
    
     addKeyListener(new KeyAdapter(){
@@ -173,7 +173,8 @@ public class rasterizer extends  JPanel implements Runnable{
     Mouse Inputs for Rotation and Zoom in and out
     
     Scroll Up/Down - Zoom in & Zoom out
-    Drag and Move --> rotation
+    Drag and Move (Right) --> Camera rotation
+    Drag and Move (Left) --> Camera rotation
     */
 
     addMouseListener(new MouseAdapter(){
@@ -226,9 +227,6 @@ public class rasterizer extends  JPanel implements Runnable{
 
         if (scroll > 0) {cam.move_k_hat(-cam_speed);}
         if(scroll < 0) {cam.move_k_hat(cam_speed);}
-
-        // prevent model to go behind camera (clipping is not added yet)
-        if(cam.cam_position.z > 3) {cam.cam_position.z = 3;}
       }      
     });
   }
