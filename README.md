@@ -8,23 +8,20 @@ A 3D software rasterizer built from scratch in Java. This project implements the
 - **OBJ Model Loading**: Parse and render standard .obj 3D model files with texture coordinate support
 - **Real-time Rendering**: Smooth 60 FPS rendering with interactive camera controls
 - **Depth Buffer (Z-Buffer)**: Proper occlusion implement (model visibility)
-- **Dual Rendering Modes**:
+- **Rendering Modes**:
   - Wireframe mode for visualization and debugging
   - Rasterized mode with lighting and shading
+  - Texture Mode for realistic textures
 - **Interactive Camera**:
-  - WASD keyboard controls for translation
-  - Mouse drag for model rotation
+  - WASD keyboard controls for camera movement
+  - Mouse drag (right) for model rotation
+  - Mouse drag (left) for camera rotation
   - Mouse wheel for zoom
 - **Lighting System**: Directional lighting with diffuse shading and ambient light
 - **Backface Culling**: Automatic removal of back-facing triangles for performance
 - **Perspective Projection**: Proper 3D to 2D transformation with field of view
 
 ## Getting Started
-
-### Prerequisites
-
-- Java 21 or higher
-- No external libraries required (uses only Java standard library)
 
 ### Installation
 
